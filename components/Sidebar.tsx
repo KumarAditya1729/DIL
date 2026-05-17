@@ -1,0 +1,105 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { 
+  LayoutDashboard, 
+  Users, 
+  CalendarCheck, 
+  CreditCard, 
+  Archive, 
+  CalendarDays, 
+  MessageSquare,
+  BarChart3,
+  Settings,
+  X
+} from "lucide-react";
+import { LogoutButton } from "./LogoutButton";
+
+export function Sidebar({ 
+  isOpen, 
+  setIsOpen 
+}: { 
+  isOpen: boolean; 
+  setIsOpen: (v: boolean) => void;
+}) {
+  const pathname = usePathname();
+
+  const navItems = [
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Students", href: "/dashboard/students", icon: Users },
+    { name: "Attendance", href: "/dashboard/attendance", icon: CalendarCheck },
+    { name: "Fees & Receipts", href: "/dashboard/fees", icon: CreditCard },
+    { name: "Past Records", href: "/dashboard/alumni", icon: Archive },
+    { name: "Events", href: "/dashboard/events", icon: CalendarDays },
+    { name: "Communication", href: "/dashboard/communication", icon: MessageSquare },
+    { name: "Reports", href: "/dashboard/reports", icon: BarChart3 },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  ];
+
+  return (
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Content */}
+      <aside className={`
+        fixed top-0 left-0 h-full w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 
+        z-50 transition-transform duration-300 flex flex-col
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2 font-bold italic text-xl text-primary-600 dark:text-primary-500">
+            <img src="/logo.png" alt="DIL Logo" className="w-8 h-8 object-contain" />
+            DIL Academy
+          </div>
+          <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-500">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto py-6 px-4 no-scrollbar">
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                    ${isActive 
+                      ? 'bg-primary-50 text-primary-600 font-medium dark:bg-primary-900/20 dark:text-primary-400' 
+                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'}
+                  `}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-primary-600' : 'text-slate-400'}`} />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3 px-2">
+          <img src="/logo.png" alt="Dance Is Life" className="w-10 h-10 object-contain drop-shadow-md" />
+          <div className="flex flex-col">
+            <span className="font-bold text-slate-900 dark:text-white leading-tight">Dance Is Life</span>
+            <span className="text-[10px] text-slate-500 font-medium tracking-wide uppercase">Art & Study Center</span>
+          </div>
+        </div>
+          <LogoutButton />
+        </div>
+      </aside>
+    </>
+  );
+}
