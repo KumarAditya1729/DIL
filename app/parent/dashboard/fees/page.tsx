@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchChildData, fetchChildInvoices } from "@/app/actions/parent";
 import { CreditCard, CheckCircle2, Clock, AlertCircle, IndianRupee, Loader2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 declare global {
   interface Window { Razorpay: any; }
@@ -74,6 +75,32 @@ export default function ParentFeesPage() {
 
   if (isLoading) {
     return <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" /></div>;
+  }
+
+  if (!child) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] animate-in fade-in duration-500">
+        <div className="text-center bg-white/5 border border-white/10 rounded-3xl p-8 max-w-sm shadow-2xl space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mx-auto">
+            <CreditCard className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-white">No Linked Student</h2>
+            <p className="text-slate-400 text-sm">
+              Please register your child first to view and pay outstanding fees.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              href="/parent/dashboard/register"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-pink-600 hover:from-primary-500 hover:to-pink-500 text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-purple-500/25"
+            >
+              Register Child Now
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
