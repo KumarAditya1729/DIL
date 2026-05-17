@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { CommandPalette } from "@/components/CommandPalette";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,12 +16,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col min-h-screen">
-        <div className="flex-1 flex flex-col">
-          {children}
-        </div>
-        <CommandPalette />
+        <ThemeProvider>
+          <div className="flex-1 flex flex-col">
+            {children}
+          </div>
+          <CommandPalette />
+          <Toaster position="top-right" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );
