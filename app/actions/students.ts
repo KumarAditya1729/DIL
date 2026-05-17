@@ -102,39 +102,82 @@ export async function fetchStudentDetails(admissionNumber: string) {
   if (!user?.user) return null;
 
   const { data: profile } = await supabase.from('profiles').select('academy_id').eq('id', user.user.id).single();
-  
+
   const query = supabase.from('students').select('*').eq('admission_number', admissionNumber);
-  if (profile?.academy_id) {
-    query.eq('academy_id', profile.academy_id);
-  }
+  if (profile?.academy_id) query.eq('academy_id', profile.academy_id);
 
   const { data, error } = await query.single();
   if (error || !data) return null;
 
-  const { data: progress } = await supabase.from('student_progress').select('*').eq('student_id', data.id).order('created_at', { ascending: false });
+  // Fetch progress notes + real attendance stats in parallel
+  const [{ data: progress }, { data: attRecords }, { data: invoiceData }] = await Promise.all([
+    supabase.from('student_progress').select('*').eq('student_id', data.id).order('created_at', { ascending: false }),
+    supabase
+      .from('attendance_records')
+      .select('status, attendance(date)')
+      .eq('student_id', data.id)
+      .order('attendance(date)', { ascending: false })
+      .limit(200),
+    supabase.from('invoices').select('status').eq('student_id', data.id),
+  ]);
+
+  const totalClasses = (attRecords || []).length;
+  const presentCount = (attRecords || []).filter(r => r.status === 'present').length;
+  const attendancePct = totalClasses > 0 ? Math.round((presentCount / totalClasses) * 100) : 0;
+  const attendanceStr = totalClasses > 0 ? `${attendancePct}% (${presentCount}/${totalClasses})` : 'No records';
+
+  const hasPending = (invoiceData || []).some(i => i.status === 'pending');
+  const feeStatus = (invoiceData || []).length === 0 ? 'No Invoices' : hasPending ? 'Dues Pending' : 'All Paid';
 
   return {
     id: data.admission_number,
+    dbId: data.id,
     name: data.full_name,
-    dob: data.date_of_birth ? new Date(data.date_of_birth).toLocaleDateString() : 'N/A',
+    dob: data.date_of_birth ? new Date(data.date_of_birth).toLocaleDateString('en-IN') : 'N/A',
     gender: data.gender || 'N/A',
-    joinDate: data.join_date ? new Date(data.join_date).toLocaleDateString() : 'N/A',
+    joinDate: data.join_date ? new Date(data.join_date).toLocaleDateString('en-IN') : 'N/A',
     status: data.status,
     styles: data.dance_style ? [data.dance_style] : [],
     batches: data.batch ? [data.batch] : [],
     parent: {
       name: data.parent_name || 'N/A',
       phone: data.mobile_number,
-      email: data.email || 'N/A'
+      email: data.email || 'N/A',
     },
     medical: data.medical_notes || 'No medical conditions reported.',
-    attendance: 'N/A', // Real calculation would query attendance_records
-    feeStatus: 'Pending', // Real calculation would query invoices
+    attendance: attendanceStr,
+    attendancePct,
+    totalClasses,
+    presentCount,
+    feeStatus,
     progress: (progress || []).map(p => ({
-      date: new Date(p.created_at).toLocaleDateString(),
-      note: p.note
-    }))
+      date: new Date(p.created_at).toLocaleDateString('en-IN'),
+      note: p.note,
+    })),
   };
+}
+
+export async function fetchStudentAttendanceHistory(studentDbId: string, monthsBack = 3) {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return [];
+
+  const since = new Date();
+  since.setMonth(since.getMonth() - monthsBack);
+
+  const { data } = await supabase
+    .from('attendance_records')
+    .select('status, notes, attendance(date, batch_id, batches(name))')
+    .eq('student_id', studentDbId)
+    .gte('attendance.date', since.toISOString().split('T')[0])
+    .order('attendance(date)', { ascending: false });
+
+  return (data || []).map((r: any) => ({
+    date: r.attendance?.date || '',
+    status: r.status as 'present' | 'absent' | 'late',
+    batch: r.attendance?.batches?.name || 'N/A',
+    notes: r.notes || '',
+  }));
 }
 
 export async function fetchAlumni() {

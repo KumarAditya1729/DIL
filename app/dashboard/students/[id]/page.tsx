@@ -3,7 +3,7 @@
 import { ArrowLeft, Edit, Printer, Send, Activity, BookOpen, AlertTriangle, Loader2, X, Save, CheckCircle2, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { fetchStudentDetails, updateStudent, addProgressNote } from "@/app/actions/students";
+import { fetchStudentDetails, updateStudent, addProgressNote, fetchStudentAttendanceHistory } from "@/app/actions/students";
 import { toast } from "sonner";
 
 type StudentProfile = {
@@ -18,7 +18,11 @@ type StudentProfile = {
   parent: { name: string; phone: string; email: string };
   medical: string;
   attendance: string;
+  attendancePct: number;
+  totalClasses: number;
+  presentCount: number;
   feeStatus: string;
+  dbId: string;
   progress: { date: string; note: string }[];
 };
 
@@ -30,11 +34,17 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
+  const [activeTab, setActiveTab] = useState<"progress" | "attendance">("progress");
+  const [attendanceHistory, setAttendanceHistory] = useState<{date: string, status: string, batch: string, notes: string}[]>([]);
 
   const loadStudent = () => {
     setIsLoading(true);
-    fetchStudentDetails(params.id).then(data => {
+    fetchStudentDetails(params.id).then(async data => {
       setStudent(data);
+      if (data?.dbId) {
+        const history = await fetchStudentAttendanceHistory(data.dbId);
+        setAttendanceHistory(history);
+      }
       setIsLoading(false);
     });
   };
@@ -188,54 +198,112 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
             </div>
           </div>
 
-          {/* Progress Tracking */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6">
-            <div className="flex justify-between items-center mb-4 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
-                <Activity className="w-5 h-5 text-primary-500" /> Progress Tracking
-              </h3>
-              <button onClick={() => setNoteOpen(true)} className="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 px-3 py-1.5 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
-                <Plus className="w-4 h-4" /> Add Note
+          {/* Tabs for Progress and Attendance */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div className="flex border-b border-slate-100 dark:border-slate-800">
+              <button
+                onClick={() => setActiveTab("progress")}
+                className={`flex-1 py-4 text-sm font-bold transition-colors ${activeTab === "progress" ? "text-primary-600 border-b-2 border-primary-600" : "text-slate-500 hover:text-slate-700"}`}
+              >
+                Progress Tracking
+              </button>
+              <button
+                onClick={() => setActiveTab("attendance")}
+                className={`flex-1 py-4 text-sm font-bold transition-colors ${activeTab === "attendance" ? "text-primary-600 border-b-2 border-primary-600" : "text-slate-500 hover:text-slate-700"}`}
+              >
+                Attendance History
               </button>
             </div>
 
-            {/* Add Note Inline */}
-            {noteOpen && (
-              <div className="mb-6 p-4 bg-primary-50/50 dark:bg-primary-900/10 border border-primary-200 dark:border-primary-800/30 rounded-xl space-y-3">
-                <textarea
-                  value={note}
-                  onChange={e => setNote(e.target.value)}
-                  rows={3}
-                  placeholder="Write a progress note... e.g. 'Improved footwork significantly this week. Ready for the next level.'"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500 resize-none"
-                />
-                <div className="flex gap-2 justify-end">
-                  <button onClick={() => setNoteOpen(false)} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 transition-colors">Cancel</button>
-                  <button onClick={handleAddNote} disabled={isSavingNote || !note.trim()} className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg flex items-center gap-2 disabled:opacity-60 transition-colors">
-                    {isSavingNote && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Save Note
-                  </button>
-                </div>
-              </div>
-            )}
+            <div className="p-6">
+              {activeTab === "progress" && (
+                <div className="space-y-6 animate-in fade-in">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-primary-500" /> Notes Timeline
+                    </h3>
+                    <button onClick={() => setNoteOpen(true)} className="flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 px-3 py-1.5 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                      <Plus className="w-4 h-4" /> Add Note
+                    </button>
+                  </div>
 
-            {student.progress.length === 0 ? (
-              <p className="text-slate-400 text-sm text-center py-6">No progress notes yet. Add the first one!</p>
-            ) : (
-              <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
-                {student.progress.map((prog, i) => (
-                  <div key={i} className="relative flex items-start gap-4 pl-14">
-                    <div className="absolute left-0 w-10 h-10 rounded-full border-4 border-white dark:border-slate-900 bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center z-10">
-                      <div className="w-2 h-2 rounded-full bg-primary-500" />
+                  {/* Add Note Inline */}
+                  {noteOpen && (
+                    <div className="mb-6 p-4 bg-primary-50/50 dark:bg-primary-900/10 border border-primary-200 dark:border-primary-800/30 rounded-xl space-y-3">
+                      <textarea
+                        value={note}
+                        onChange={e => setNote(e.target.value)}
+                        rows={3}
+                        placeholder="Write a progress note... e.g. 'Improved footwork significantly this week.'"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500 resize-none"
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => setNoteOpen(false)} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 transition-colors">Cancel</button>
+                        <button onClick={handleAddNote} disabled={isSavingNote || !note.trim()} className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg flex items-center gap-2 disabled:opacity-60 transition-colors">
+                          {isSavingNote && <Loader2 className="w-4 h-4 animate-spin" />} Save Note
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex-1 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/50 shadow-sm">
-                      <time className="text-xs font-medium text-primary-600 dark:text-primary-400">{prog.date}</time>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{prog.note}</p>
+                  )}
+
+                  {student.progress.length === 0 ? (
+                    <p className="text-slate-400 text-sm text-center py-6">No progress notes yet. Add the first one!</p>
+                  ) : (
+                    <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
+                      {student.progress.map((prog, i) => (
+                        <div key={i} className="relative flex items-start gap-4 pl-14">
+                          <div className="absolute left-0 w-10 h-10 rounded-full border-4 border-white dark:border-slate-900 bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center z-10">
+                            <div className="w-2 h-2 rounded-full bg-primary-500" />
+                          </div>
+                          <div className="flex-1 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/50 shadow-sm">
+                            <time className="text-xs font-medium text-primary-600 dark:text-primary-400">{prog.date}</time>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{prog.note}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === "attendance" && (
+                <div className="space-y-6 animate-in fade-in">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-500" /> Recent Attendance
+                    </h3>
+                    <div className="text-sm">
+                      <span className="font-bold text-slate-900 dark:text-white">{student.attendancePct}%</span>
+                      <span className="text-slate-500 ml-1">Overall</span>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  {attendanceHistory.length === 0 ? (
+                    <p className="text-slate-400 text-sm text-center py-6">No attendance records found for the last 3 months.</p>
+                  ) : (
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {attendanceHistory.map((record, i) => (
+                        <div key={i} className="py-3 flex justify-between items-center">
+                          <div>
+                            <p className="font-medium text-sm text-slate-900 dark:text-white">
+                              {new Date(record.date).toLocaleDateString("en-IN", { weekday: 'short', day: 'numeric', month: 'short' })}
+                            </p>
+                            <p className="text-xs text-slate-500">{record.batch}</p>
+                          </div>
+                          <span className={`px-2.5 py-1 text-xs font-medium rounded-full capitalize ${
+                            record.status === "present" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : record.status === "absent" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                          }`}>
+                            {record.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
