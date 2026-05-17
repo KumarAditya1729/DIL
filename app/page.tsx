@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, CheckCircle2, Shield, Zap, BarChart, Smartphone, CalendarCheck, CreditCard } from "lucide-react";
 
 export default function LandingPage() {
@@ -8,7 +9,7 @@ export default function LandingPage() {
       <nav className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Dance Is Life" className="w-10 h-10 object-contain drop-shadow-md" />
+            <Image src="/logo.png" alt="Dance Is Life" width={40} height={40} className="object-contain drop-shadow-md" />
             <span className="font-bold text-xl text-slate-900 dark:text-white tracking-tight">Dance Is Life</span>
           </div>
           <div className="flex gap-4">

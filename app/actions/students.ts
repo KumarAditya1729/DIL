@@ -161,3 +161,62 @@ export async function fetchAlumni() {
     achievements: 'Academy Alumnus',
   }));
 }
+
+export async function updateStudent(admissionNumber: string, formData: FormData) {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return { error: "Unauthorized." };
+
+  const updates = {
+    full_name:     formData.get("fullName") as string,
+    mobile_number: formData.get("mobileNumber") as string,
+    parent_name:   formData.get("parentName") as string,
+    date_of_birth: formData.get("dob") as string || null,
+    gender:        formData.get("gender") as string || null,
+    dance_style:   formData.get("danceStyle") as string || null,
+    batch:         formData.get("batch") as string || null,
+    status:        formData.get("status") as string || "active",
+    medical_notes: formData.get("medicalNotes") as string || null,
+    email:         formData.get("email") as string || null,
+  };
+
+  if (!updates.full_name || !updates.mobile_number) {
+    return { error: "Name and Mobile number are required." };
+  }
+
+  const { error } = await supabase
+    .from('students')
+    .update(updates)
+    .eq('admission_number', admissionNumber);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/students/${admissionNumber}`);
+  revalidatePath("/dashboard/students");
+  return { success: true };
+}
+
+export async function addProgressNote(studentId: string, note: string) {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return { error: "Unauthorized." };
+
+  // Resolve student DB id from admission number
+  const { data: student } = await supabase
+    .from('students')
+    .select('id')
+    .eq('admission_number', studentId)
+    .single();
+
+  if (!student) return { error: "Student not found." };
+
+  const { error } = await supabase.from('student_progress').insert({
+    student_id: student.id,
+    note,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/students/${studentId}`);
+  return { success: true };
+}

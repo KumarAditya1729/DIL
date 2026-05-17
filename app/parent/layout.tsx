@@ -30,12 +30,13 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
             <span className="ml-2 text-xs text-slate-500 font-medium">Parent Portal</span>
           </div>
         </div>
-        <form action={parentLogout}>
-          <button type="submit" className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition-colors">
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </button>
-        </form>
+        <button
+          onClick={() => parentLogout()}
+          className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          Sign Out
+        </button>
       </header>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">

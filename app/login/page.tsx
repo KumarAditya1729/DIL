@@ -4,6 +4,7 @@ import { useFormState, useFormStatus } from "react-dom";
 import { authenticate } from "@/app/actions/auth";
 import { Lock, Mail, Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -34,7 +35,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
           <Link href="/" className="inline-block mb-6 transform hover:scale-105 transition-all duration-300">
-            <img src="/logo.png" alt="Dance Is Life Logo" className="w-32 h-32 object-contain mx-auto drop-shadow-xl" />
+            <Image src="/logo.png" alt="Dance Is Life Logo" width={128} height={128} className="object-contain mx-auto drop-shadow-xl" />
           </Link>
           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Welcome Back</h1>
           <p className="text-slate-500 mt-2">Sign in to your academy dashboard</p>

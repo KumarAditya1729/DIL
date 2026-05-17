@@ -75,6 +75,7 @@ export default function NewAdmissionPage() {
               className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors overflow-hidden"
             >
               {previewImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
               ) : (
                 <>

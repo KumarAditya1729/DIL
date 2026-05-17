@@ -93,13 +93,6 @@ export default function AttendancePage() {
     setShowDatePicker(false);
   };
 
-  const shiftMonth = (dir: number) => {
-    const d = new Date(currentDate);
-    d.setMonth(d.getMonth() + dir);
-    setCurrentDate(d);
-    setPickerMonth(d.getMonth());
-    setPickerYear(d.getFullYear());
-  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">

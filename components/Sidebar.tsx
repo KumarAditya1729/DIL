@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
@@ -56,7 +57,7 @@ export function Sidebar({
       `}>
         <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40">
           <div className="flex items-center gap-2 font-bold italic text-xl text-primary-600 dark:text-primary-500">
-            <img src="/logo.png" alt="DIL Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
+            <Image src="/logo.png" alt="DIL Logo" width={32} height={32} className="object-contain drop-shadow-sm" />
             <span>DIL Academy</span>
           </div>
           <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-500 hover:text-slate-700 transition-colors">
@@ -91,7 +92,7 @@ export function Sidebar({
 
         <div className="p-4 border-t border-slate-100/50 dark:border-slate-800/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md">
           <div className="flex items-center gap-3 px-2 mb-4 hover-lift">
-          <img src="/logo.png" alt="Dance Is Life" className="w-10 h-10 object-contain drop-shadow-md" />
+          <Image src="/logo.png" alt="Dance Is Life" width={40} height={40} className="object-contain drop-shadow-md" />
           <div className="flex flex-col">
             <span className="font-bold text-slate-900 dark:text-white leading-tight">Dance Is Life</span>
             <span className="text-[10px] text-slate-500 font-medium tracking-wide uppercase">Art & Study Center</span>

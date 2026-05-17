@@ -38,7 +38,7 @@ export default function ParentLoginPage() {
               <Music2 className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white">Parent Portal</h1>
-            <p className="text-slate-400 text-sm mt-1">Track your child's journey at DIL Academy</p>
+            <p className="text-slate-400 text-sm mt-1">Track your child&apos;s journey at DIL Academy</p>
           </div>
 
           {/* Error */}
