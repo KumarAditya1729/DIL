@@ -77,6 +77,30 @@ export default function AttendancePage() {
 
   const percentPresent = students.length ? Math.round((students.filter(s => s.present).length / students.length) * 100) : 0;
 
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pickerMonth, setPickerMonth] = useState(currentDate.getMonth());
+  const [pickerYear, setPickerYear] = useState(currentDate.getFullYear());
+  const [pickerDay, setPickerDay] = useState(currentDate.getDate());
+
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2010 + 1 }, (_, i) => currentYear - i);
+
+  const applyDate = () => {
+    const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
+    const safeDay = Math.min(pickerDay, daysInMonth);
+    setCurrentDate(new Date(pickerYear, pickerMonth, safeDay));
+    setShowDatePicker(false);
+  };
+
+  const shiftMonth = (dir: number) => {
+    const d = new Date(currentDate);
+    d.setMonth(d.getMonth() + dir);
+    setCurrentDate(d);
+    setPickerMonth(d.getMonth());
+    setPickerYear(d.getFullYear());
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -85,13 +109,77 @@ export default function AttendancePage() {
           <p className="text-slate-500 text-sm mt-1">Mark and track student attendance.</p>
         </div>
         <div className="flex gap-2">
-          <div className="flex items-center gap-4 bg-white dark:bg-slate-900 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <button onClick={() => shiftDate(-1)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"><ChevronLeft className="w-5 h-5 text-slate-500" /></button>
-            <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-200 min-w-[120px] justify-center">
-              <CalendarIcon className="w-4 h-4 text-primary-600" />
-              {formatDate(currentDate)}
+          {/* Date Picker */}
+          <div className="relative">
+            <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <button onClick={() => shiftDate(-1)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"><ChevronLeft className="w-4 h-4 text-slate-500" /></button>
+              <button 
+                onClick={() => { setPickerMonth(currentDate.getMonth()); setPickerYear(currentDate.getFullYear()); setPickerDay(currentDate.getDate()); setShowDatePicker(!showDatePicker); }}
+                className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center hover:text-primary-600 transition-colors text-sm"
+              >
+                <CalendarIcon className="w-4 h-4 text-primary-600" />
+                {formatDate(currentDate)}
+              </button>
+              <button onClick={() => shiftDate(1)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"><ChevronRight className="w-4 h-4 text-slate-500" /></button>
             </div>
-            <button onClick={() => shiftDate(1)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"><ChevronRight className="w-5 h-5 text-slate-500" /></button>
+
+            {/* Smart Date Picker Dropdown */}
+            {showDatePicker && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowDatePicker(false)} />
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 p-4 space-y-4">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jump to Date</p>
+                  
+                  {/* Year + Month row */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Year</label>
+                      <select
+                        value={pickerYear}
+                        onChange={e => setPickerYear(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
+                      >
+                        {years.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-500">Month</label>
+                      <select
+                        value={pickerMonth}
+                        onChange={e => setPickerMonth(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
+                      >
+                        {monthNames.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Day input */}
+                  <div className="space-y-1">
+                    <label className="text-xs text-slate-500">Day (1–{new Date(pickerYear, pickerMonth + 1, 0).getDate()})</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={new Date(pickerYear, pickerMonth + 1, 0).getDate()}
+                      value={pickerDay}
+                      onChange={e => setPickerDay(Number(e.target.value))}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
+                    />
+                  </div>
+
+                  {/* Quick shortcuts */}
+                  <div className="flex gap-2 flex-wrap">
+                    <button onClick={() => { setCurrentDate(new Date()); setShowDatePicker(false); }} className="px-3 py-1 text-xs rounded-lg bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 hover:bg-primary-100 transition-colors font-medium">Today</button>
+                    <button onClick={() => { const d = new Date(); d.setDate(d.getDate()-7); setCurrentDate(d); setShowDatePicker(false); }} className="px-3 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">-7 days</button>
+                    <button onClick={() => { const d = new Date(); d.setMonth(d.getMonth()-1); setCurrentDate(d); setShowDatePicker(false); }} className="px-3 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">Last month</button>
+                  </div>
+
+                  <button onClick={applyDate} className="w-full py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-medium transition-colors">
+                    Go to Date
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

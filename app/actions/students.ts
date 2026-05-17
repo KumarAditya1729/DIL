@@ -136,3 +136,28 @@ export async function fetchStudentDetails(admissionNumber: string) {
     }))
   };
 }
+
+export async function fetchAlumni() {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+
+  if (!user?.user) return [];
+
+  const { data: profile } = await supabase.from('profiles').select('academy_id').eq('id', user.user.id).single();
+  if (!profile?.academy_id) return [];
+
+  const { data } = await supabase
+    .from('students')
+    .select('admission_number, full_name, join_date, dance_style, status')
+    .eq('academy_id', profile.academy_id)
+    .in('status', ['inactive', 'alumni'])
+    .order('join_date', { ascending: false });
+
+  return (data || []).map(s => ({
+    id: s.admission_number,
+    name: s.full_name,
+    years: `${new Date(s.join_date).getFullYear()} - Present`,
+    style: s.dance_style,
+    achievements: 'Academy Alumnus',
+  }));
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { Archive, Search, History, Trophy, Upload, Download } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const toast = { success: (msg: string) => alert(msg), error: (msg: string) => alert(msg), info: (msg: string) => alert(msg) };
 
@@ -16,13 +16,14 @@ function parseCSV(text: string): Record<string, string>[] {
   });
 }
 
+import { fetchAlumni } from "@/app/actions/students";
+
 export default function AlumniPage() {
-  const [alumni, setAlumni] = useState([
-    { id: "DA-2015-042", name: "Riya Kapoor", years: "2015 - 2018", style: "Contemporary", achievements: "National Winner 2017" },
-    { id: "DA-2016-112", name: "Vikram Malhotra", years: "2016 - 2019", style: "Hip Hop", achievements: "Featured in Dance India Dance" },
-    { id: "DA-2018-056", name: "Sneha Reddy", years: "2018 - 2021", style: "Classical", achievements: "Arangetram Completed" },
-    { id: "DA-2019-088", name: "Arjun Singh", years: "2019 - 2023", style: "Bollywood", achievements: "Choreographer at local events" },
-  ]);
+  const [alumni, setAlumni] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchAlumni().then(setAlumni);
+  }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

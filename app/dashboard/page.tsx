@@ -54,11 +54,11 @@ export default async function Dashboard() {
           <p className="text-slate-500 mt-1">Here&apos;s what&apos;s happening at your academy today.</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/dashboard/students/new" className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium shadow-sm transition-all text-sm flex items-center gap-2">
+          <Link href="/dashboard/students/new" className="px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white rounded-xl font-medium shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 transition-all duration-300 text-sm flex items-center gap-2 hover-lift">
             <UserPlus className="w-4 h-4" />
             New Admission
           </Link>
-          <Link href="/dashboard/fees" className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg font-medium shadow-sm transition-all text-sm flex items-center gap-2">
+          <Link href="/dashboard/fees" className="px-5 py-2.5 bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 hover-lift text-slate-700 dark:text-slate-200 rounded-xl font-medium shadow-sm transition-all text-sm flex items-center gap-2">
             <CreditCard className="w-4 h-4" />
             Collect Fee
           </Link>
@@ -70,14 +70,15 @@ export default async function Dashboard() {
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start">
+            <div key={i} className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl p-6 hover-lift relative overflow-hidden group">
+              <div className={`absolute top-0 right-0 w-32 h-32 ${stat.color} opacity-5 rounded-full blur-3xl -mr-10 -mt-10 group-hover:opacity-20 transition-opacity duration-500`}></div>
+              <div className="flex justify-between items-start relative z-10">
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{stat.value}</p>
                 </div>
-                <div className={`p-3 rounded-xl text-white ${stat.color} shadow-sm`}>
-                  <Icon className="w-5 h-5" />
+                <div className={`p-3 rounded-2xl text-white ${stat.color} shadow-lg shadow-black/5`}>
+                  <Icon className="w-6 h-6" />
                 </div>
               </div>
             </div>
@@ -88,7 +89,7 @@ export default async function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Actions & Recent */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl p-6 lg:p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">Recent Admissions</h2>
               <Link href="/dashboard/students" className="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center">
@@ -133,11 +134,11 @@ export default async function Dashboard() {
 
         {/* Sidebar / Widgets */}
         <div className="space-y-6">
-          <div className="bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-20">
-              <Calendar className="w-24 h-24" />
+          <div className="bg-gradient-to-br from-primary-600 to-primary-900 rounded-3xl p-6 lg:p-8 text-white shadow-xl shadow-primary-900/20 relative overflow-hidden hover-lift">
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4">
+              <Calendar className="w-32 h-32" />
             </div>
-            <h2 className="text-lg font-bold mb-1 relative z-10">Today&apos;s Schedule</h2>
+            <h2 className="text-xl font-bold mb-1 relative z-10">Today&apos;s Schedule</h2>
             <p className="text-primary-100 text-sm mb-6 relative z-10">
               {upcomingEvents.length === 0 ? "No batches scheduled today" : `You have ${upcomingEvents.length} batches today`}
             </p>
