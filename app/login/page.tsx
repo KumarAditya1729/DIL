@@ -83,7 +83,12 @@ export default function LoginPage() {
             <SubmitButton />
           </form>
 
-
+          <p className="text-center text-slate-500 dark:text-slate-400 text-xs mt-6">
+            Looking for the Parent Portal?{" "}
+            <a href="/parent/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 font-semibold transition-colors">
+              Parent Portal →
+            </a>
+          </p>
         </div>
       </div>
     </div>

@@ -12,9 +12,12 @@ export default function LandingPage() {
             <Image src="/logo.png" alt="Dance Is Life" width={40} height={40} className="object-contain drop-shadow-md" />
             <span className="font-bold text-xl text-slate-900 dark:text-white tracking-tight">Dance Is Life</span>
           </div>
-          <div className="flex gap-4">
-            <Link href="/login" className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all flex items-center gap-2">
-              Staff Login <ArrowRight className="w-4 h-4" />
+          <div className="flex items-center gap-3">
+            <Link href="/parent/login" className="px-4 py-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-medium transition-all">
+              Parent Portal
+            </Link>
+            <Link href="/login" className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-medium shadow-sm transition-all flex items-center gap-1.5">
+              Staff Login <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -33,11 +36,37 @@ export default function LandingPage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-accent-500">Art & Study Center</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Manage admissions, track attendance, collect fees, and organise spectacular events — all from one unified dashboard.
+            Manage admissions, track attendance, collect fees, and organize spectacular events — all from one unified dashboard.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Link href="/login" className="px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-lg shadow-primary-500/25 transition-all flex items-center justify-center gap-2 text-lg group">
-              Access Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto pt-6">
+            {/* Parent card */}
+            <Link href="/parent/login" className="group p-6 bg-gradient-to-br from-white to-purple-50/20 dark:from-slate-900 dark:to-purple-950/10 rounded-2xl border border-slate-200 dark:border-slate-800/80 hover:border-purple-300 dark:hover:border-purple-900/60 shadow-md hover:shadow-xl transition-all text-left flex flex-col justify-between min-h-[160px] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-xl pointer-events-none"></div>
+              <div>
+                <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 mb-4">
+                  For Parents
+                </span>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">Parent Portal</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 leading-relaxed">View invoice statements, payment receipt history, and daily attendance cards.</p>
+              </div>
+              <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400 font-semibold text-sm mt-4">
+                Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
+            {/* Admin card */}
+            <Link href="/login" className="group p-6 bg-gradient-to-br from-white to-primary-50/20 dark:from-slate-900 dark:to-primary-950/10 rounded-2xl border border-slate-200 dark:border-slate-800/80 hover:border-primary-300 dark:hover:border-primary-900/60 shadow-md hover:shadow-xl transition-all text-left flex flex-col justify-between min-h-[160px] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full blur-xl pointer-events-none"></div>
+              <div>
+                <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-100 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400 mb-4">
+                  For Staff
+                </span>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">Admin & Teachers</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 leading-relaxed">Manage new registrations, attendance registers, collect fees, and dispatch announcements.</p>
+              </div>
+              <div className="flex items-center gap-1 text-primary-600 dark:text-primary-400 font-semibold text-sm mt-4">
+                Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
             </Link>
           </div>
         </div>
