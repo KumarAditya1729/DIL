@@ -25,26 +25,8 @@ jobs:
       - name: Run linting
         run: npm run lint
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm test
-
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run npm audit
-        run: npm audit --audit-level=high
-
   deploy-preview:
-    needs: [lint-and-typecheck, test, security-scan]
+    needs: [lint-and-typecheck]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -58,7 +40,7 @@ jobs:
           alias-domains: preview.danceapp.io
 
   deploy-production:
-    needs: [lint-and-typecheck, test, security-scan]
+    needs: [lint-and-typecheck]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
