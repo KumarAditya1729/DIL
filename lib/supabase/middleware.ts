@@ -39,6 +39,22 @@ export async function updateSession(request: NextRequest) {
   // Refresh session — required for Server Components to get fresh auth state
   const { data: { user } } = await supabase.auth.getUser()
 
+  const isParent = user?.user_metadata?.role === 'parent'
+
+  // Protect Admin Portal (/dashboard) - redirect to parent portal if user is a parent
+  if (user && isParent && request.nextUrl.pathname.startsWith('/dashboard')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/parent/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  // Protect Parent Portal (/parent/dashboard) - redirect to admin portal if user is staff/admin
+  if (user && !isParent && request.nextUrl.pathname.startsWith('/parent/dashboard')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
   // Protect /dashboard routes — redirect to /login if not authenticated
   if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
     const url = request.nextUrl.clone()
@@ -46,11 +62,25 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect authenticated users away from login page
-  if (user && request.nextUrl.pathname === '/login') {
+  // Protect /parent/dashboard routes — redirect to /parent/login if not authenticated
+  if (!user && request.nextUrl.pathname.startsWith('/parent/dashboard')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/parent/login'
     return NextResponse.redirect(url)
+  }
+
+  // Redirect authenticated users away from login pages
+  if (user) {
+    if (request.nextUrl.pathname === '/login') {
+      const url = request.nextUrl.clone()
+      url.pathname = isParent ? '/parent/dashboard' : '/dashboard'
+      return NextResponse.redirect(url)
+    }
+    if (request.nextUrl.pathname === '/parent/login') {
+      const url = request.nextUrl.clone()
+      url.pathname = isParent ? '/parent/dashboard' : '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return response
