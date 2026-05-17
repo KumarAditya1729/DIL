@@ -136,6 +136,8 @@ CREATE TABLE events (
     budget DECIMAL(10, 2),
     revenue DECIMAL(10, 2) DEFAULT 0,
     status VARCHAR(50) DEFAULT 'planning',
+    cover_image TEXT,
+    gallery JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
