@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarCheck, CreditCard, LogOut, Music2 } from "lucide-react";
+import { Home, CalendarCheck, CreditCard, LogOut, Music2, UserPlus } from "lucide-react";
 import { parentLogout } from "@/app/actions/parent";
 
 const navItems = [
   { name: "Overview", href: "/parent/dashboard", icon: Home },
+  { name: "Register Child", href: "/parent/dashboard/register", icon: UserPlus },
   { name: "Attendance", href: "/parent/dashboard/attendance", icon: CalendarCheck },
   { name: "Fees & Payment", href: "/parent/dashboard/fees", icon: CreditCard },
 ];

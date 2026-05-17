@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchChildData, fetchChildAttendance, fetchChildInvoices } from "@/app/actions/parent";
-import { CalendarCheck, CreditCard, TrendingUp, GraduationCap, Clock, AlertCircle } from "lucide-react";
+import { CalendarCheck, CreditCard, TrendingUp, GraduationCap, Clock, AlertCircle, UserPlus, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function ParentDashboard() {
@@ -41,13 +41,25 @@ export default function ParentDashboard() {
 
   if (!child) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center bg-white/5 border border-white/10 rounded-3xl p-10">
-          <AlertCircle className="w-12 h-12 text-orange-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">No Student Linked</h2>
-          <p className="text-slate-400 text-sm max-w-xs">
-            No student record found for this account. Please contact the academy to link your child&apos;s profile.
-          </p>
+      <div className="flex items-center justify-center min-h-[450px] animate-in fade-in duration-500">
+        <div className="text-center bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 max-w-md shadow-2xl space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mx-auto shadow-lg shadow-purple-950/20">
+            <UserPlus className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-white">Enroll Your Child</h2>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              No student is currently linked to your parent account. Get started by registering your child to DIL Academy!
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              href="/parent/dashboard/register"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-pink-600 hover:from-primary-500 hover:to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/25 transition-all text-sm group"
+            >
+              Start Student Registration <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
       </div>
     );

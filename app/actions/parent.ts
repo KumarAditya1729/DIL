@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getNextAdmissionNumber } from "@/app/actions/students";
 
 export async function parentLogin(formData: FormData) {
   const supabase = createClient();
@@ -83,4 +84,57 @@ export async function createRazorpayOrder(invoiceId: string, amount: number) {
     currency: "INR",
     invoiceId,
   };
+}
+
+export async function registerChild(formData: FormData) {
+  const supabase = createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth?.user) return { error: "Unauthorized. Please log in." };
+
+  const fullName = formData.get("fullName") as string;
+  const parentName = formData.get("parentName") as string;
+  const mobileNumber = formData.get("mobileNumber") as string;
+  const dob = formData.get("dob") as string;
+  const gender = formData.get("gender") as string;
+  const danceStyle = formData.get("danceStyle") as string;
+  const batch = formData.get("batch") as string;
+  const medicalNotes = formData.get("medicalNotes") as string;
+
+  if (!fullName || !mobileNumber || !parentName) {
+    return { error: "Full Name, Parent Name, and Mobile Number are required." };
+  }
+
+  try {
+    // 1. Get current academy id
+    const { data: academy } = await supabase.from("academies").select("id").limit(1).maybeSingle();
+    if (!academy) {
+      return { error: "No active academy found in the system." };
+    }
+
+    // 2. Generate admission number
+    const admissionNumber = await getNextAdmissionNumber();
+
+    // 3. Insert student record linked to parent email
+    const { error: dbError } = await supabase.from("students").insert({
+      academy_id: academy.id,
+      admission_number: admissionNumber,
+      full_name: fullName,
+      parent_name: parentName,
+      mobile_number: mobileNumber,
+      email: auth.user.email, // Link to the parent email
+      date_of_birth: dob || null,
+      gender: gender || null,
+      dance_style: danceStyle || null,
+      batch: batch || null,
+      medical_notes: medicalNotes || null,
+      status: "active",
+    });
+
+    if (dbError) throw dbError;
+
+    return { success: true, admissionNumber };
+  } catch (error: any) {
+    console.error("Failed to register child:", error);
+    return { error: error.message || "Failed to register. Please try again." };
+  }
 }
