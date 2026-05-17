@@ -263,3 +263,21 @@ export async function addProgressNote(studentId: string, note: string) {
   revalidatePath(`/dashboard/students/${studentId}`);
   return { success: true };
 }
+
+export async function restoreStudent(admissionNumber: string) {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return { error: "Unauthorized." };
+
+  const { error } = await supabase
+    .from('students')
+    .update({ status: 'active' })
+    .eq('admission_number', admissionNumber);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/students/${admissionNumber}`);
+  revalidatePath("/dashboard/students");
+  revalidatePath("/dashboard/alumni");
+  return { success: true };
+}
