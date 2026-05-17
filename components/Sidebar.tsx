@@ -33,6 +33,7 @@ export function Sidebar({
 
   useEffect(() => {
     getUserRole().then(role => setUserRole(role || "admin")); // Default to admin for local testing if unauthenticated
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const navItems = [

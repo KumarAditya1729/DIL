@@ -47,7 +47,7 @@ export default function FeesPage() {
 
     const now = new Date();
     setFeeRecords(
-      (invoices || []).map((d) => {
+      (invoices || []).map((d: any) => {
         const isOverdue =
           d.status === "pending" && d.due_date && new Date(d.due_date) < now;
         return {
@@ -139,14 +139,14 @@ export default function FeesPage() {
   };
 
   // Stats
-  const totalPaid      = feeRecords.filter(r => r.status === "paid").reduce((s, r) => s + parseFloat(r.amount), 0);
-  const totalPending   = feeRecords.filter(r => r.status === "pending").reduce((s, r) => s + parseFloat(r.amount), 0);
-  const totalOverdue   = feeRecords.filter(r => r.status === "overdue").reduce((s, r) => s + parseFloat(r.amount), 0);
+  const totalPaid      = feeRecords.filter((r: any) => r.status === "paid").reduce((s: any, r: any) => s + parseFloat(r.amount), 0);
+  const totalPending   = feeRecords.filter((r: any) => r.status === "pending").reduce((s: any, r: any) => s + parseFloat(r.amount), 0);
+  const totalOverdue   = feeRecords.filter((r: any) => r.status === "overdue").reduce((s: any, r: any) => s + parseFloat(r.amount), 0);
   const totalRevenue   = totalPaid;
 
   const filtered = filterStatus === "all"
     ? feeRecords
-    : feeRecords.filter(r => r.status === filterStatus);
+    : feeRecords.filter((r: any) => r.status === filterStatus);
 
   const statusStyle: Record<string, string> = {
     paid:    "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -208,7 +208,7 @@ export default function FeesPage() {
               >
                 {s}
                 <span className="ml-1 opacity-60">
-                  ({s === "all" ? feeRecords.length : feeRecords.filter(r => r.status === s).length})
+                  ({s === "all" ? feeRecords.length : feeRecords.filter((r: any) => r.status === s).length})
                 </span>
               </button>
             ))}
@@ -243,7 +243,7 @@ export default function FeesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filtered.map((record) => (
+                {filtered.map((record: any) => (
                   <tr key={record.id} className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/20 ${record.status === "overdue" ? "bg-red-50/30 dark:bg-red-900/5" : ""}`}>
                     <td className="px-6 py-4">
                       <div className="font-mono font-medium text-slate-900 dark:text-slate-200 text-xs">{record.id}</div>
@@ -337,7 +337,7 @@ export default function FeesPage() {
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white"
                   >
                     <option value="">— Select a student —</option>
-                    {students.map(s => (
+                    {students.map((s: any) => (
                       <option key={s.id} value={s.admission_number}>
                         {s.full_name} ({s.admission_number})
                       </option>

@@ -27,7 +27,7 @@ export async function fetchStudentsByBatch(batchName: string) {
   }
 
   // Map to the format the UI expects
-  return (data || []).map(student => ({
+  return (data || []).map((student: any) => ({
     id: student.id,
     name: student.full_name,
     admissionNumber: student.admission_number,

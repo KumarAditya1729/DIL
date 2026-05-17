@@ -49,7 +49,9 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
     });
   };
 
-  useEffect(() => { loadStudent(); }, [params.id]);
+  useEffect(() => { loadStudent(); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
 
   const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

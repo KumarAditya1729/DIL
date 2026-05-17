@@ -161,7 +161,7 @@ export default function CommunicationPage() {
                 <div className="relative">
                   <select
                     value={audience}
-                    onChange={e => setAudience(e.target.value)}
+                    onChange={(e: any) => setAudience(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-slate-200 appearance-none"
                   >
                     <option>All Active Students</option>
@@ -181,13 +181,13 @@ export default function CommunicationPage() {
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Delivery Channels</label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={useWhatsApp} onChange={e => setUseWhatsApp(e.target.checked)} className="rounded accent-green-500" />
+                    <input type="checkbox" checked={useWhatsApp} onChange={(e: any) => setUseWhatsApp(e.target.checked)} className="rounded accent-green-500" />
                     <span className="text-sm text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5 text-green-500" /> WhatsApp
                     </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={useInApp} onChange={e => setUseInApp(e.target.checked)} className="rounded accent-primary-500" />
+                    <input type="checkbox" checked={useInApp} onChange={(e: any) => setUseInApp(e.target.checked)} className="rounded accent-primary-500" />
                     <span className="text-sm text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                       <BellRing className="w-3.5 h-3.5 text-primary-500" /> In-App
                     </span>
@@ -203,7 +203,7 @@ export default function CommunicationPage() {
                     rows={7}
                     required
                     value={message}
-                    onChange={e => setMessage(e.target.value.slice(0, MAX_CHARS))}
+                    onChange={(e: any) => setMessage(e.target.value.slice(0, MAX_CHARS))}
                     placeholder="Type your announcement here, or pick a template on the right →"
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none text-sm dark:text-slate-200 resize-none font-mono leading-relaxed"
                   />
@@ -248,7 +248,7 @@ export default function CommunicationPage() {
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {broadcasts.map((b, i) => (
+                  {broadcasts.map((b: any, i: any) => (
                     <div key={i} className="px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1 min-w-0">

@@ -116,7 +116,7 @@ export default function EventsPage() {
             <Calendar className="w-8 h-8 text-primary-500" />
           </div>
           <h3 className="font-bold text-slate-900 dark:text-white text-lg">No events yet</h3>
-          <p className="text-sm text-slate-500 mt-1 mb-6">Click "Create Event" to plan your first showcase.</p>
+          <p className="text-sm text-slate-500 mt-1 mb-6">Click &quot;Create Event&quot; to plan your first showcase.</p>
           <button onClick={() => setShowModal(true)} className="px-5 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 shadow-sm">
             Create First Event
           </button>
