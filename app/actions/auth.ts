@@ -43,3 +43,17 @@ export async function logout() {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+export async function getUserRole() {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return null;
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.user.id)
+    .single();
+
+  return profile?.role || 'teacher';
+}

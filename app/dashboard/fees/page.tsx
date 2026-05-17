@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { getUserRole } from "@/app/actions/auth";
+import { useRouter } from "next/navigation";
 
 const MONTHS = [
   "January","February","March","April","May","June",
@@ -24,6 +26,8 @@ export default function FeesPage() {
   const [isCreating, setIsCreating]         = useState(false);
   const [markingPaid, setMarkingPaid]       = useState<string | null>(null);
   const [filterStatus, setFilterStatus]     = useState<"all" | "pending" | "paid" | "overdue">("all");
+  const [hasAccess, setHasAccess]           = useState(true);
+  const router = useRouter();
 
   const fetchData = useCallback(async () => {
     const supabase = createClient();
@@ -65,7 +69,26 @@ export default function FeesPage() {
     setIsLoading(false);
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { 
+    getUserRole().then(role => {
+      if (role === 'teacher') {
+        setHasAccess(false);
+        router.push('/dashboard');
+      } else {
+        fetchData(); 
+      }
+    });
+  }, [fetchData, router]);
+
+  if (!hasAccess) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500">
+        <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Access Denied</h2>
+        <p className="mt-2 text-sm">You do not have permission to view financial records.</p>
+      </div>
+    );
+  }
 
   const handleDownload = (record: any) => {
     setIsGenerating(true);

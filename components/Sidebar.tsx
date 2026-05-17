@@ -17,6 +17,8 @@ import {
   X
 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
+import { getUserRole } from "@/app/actions/auth";
+import { useEffect, useState as useReactState } from "react";
 
 export function Sidebar({ 
   isOpen, 
@@ -27,17 +29,23 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
 
+  const [userRole, setUserRole] = useReactState<string | null>(null);
+
+  useEffect(() => {
+    getUserRole().then(role => setUserRole(role || "admin")); // Default to admin for local testing if unauthenticated
+  }, []);
+
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Students", href: "/dashboard/students", icon: Users },
     { name: "Attendance", href: "/dashboard/attendance", icon: CalendarCheck },
-    { name: "Fees & Receipts", href: "/dashboard/fees", icon: CreditCard },
+    { name: "Fees & Receipts", href: "/dashboard/fees", icon: CreditCard, adminOnly: true },
     { name: "Past Records", href: "/dashboard/alumni", icon: Archive },
     { name: "Events", href: "/dashboard/events", icon: CalendarDays },
     { name: "Communication", href: "/dashboard/communication", icon: MessageSquare },
-    { name: "Reports", href: "/dashboard/reports", icon: BarChart3 },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
-  ];
+    { name: "Reports", href: "/dashboard/reports", icon: BarChart3, adminOnly: true },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings, adminOnly: true },
+  ].filter(item => !item.adminOnly || userRole === 'admin' || userRole === 'owner');
 
   return (
     <>

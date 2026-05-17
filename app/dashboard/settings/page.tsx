@@ -5,6 +5,9 @@ import { useState, useEffect } from "react";
 
 import { updateAcademySettings, fetchAcademySettings } from "@/app/actions/settings";
 import { toast } from "sonner";
+import { getUserRole } from "@/app/actions/auth";
+import { useRouter } from "next/navigation";
+import { AlertTriangle } from "lucide-react";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("General Profile");
@@ -12,13 +15,32 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [settings, setSettings] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    fetchAcademySettings().then(data => {
-      setSettings(data);
-      setIsLoading(false);
+    getUserRole().then(role => {
+      if (role === 'teacher') {
+        setHasAccess(false);
+        router.push('/dashboard');
+      } else {
+        fetchAcademySettings().then(data => {
+          setSettings(data);
+          setIsLoading(false);
+        });
+      }
     });
-  }, []);
+  }, [router]);
+
+  if (!hasAccess) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500">
+        <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Access Denied</h2>
+        <p className="mt-2 text-sm">You do not have permission to view Global Settings.</p>
+      </div>
+    );
+  }
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
