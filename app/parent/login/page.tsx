@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { parentLogin } from "@/app/actions/parent";
+import { parentLogin, parentRegister } from "@/app/actions/parent";
 import { Music2, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function ParentLoginPage() {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -13,11 +14,30 @@ export default function ParentLoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+
     const formData = new FormData(e.currentTarget);
-    const res = await parentLogin(formData);
-    if (res?.error) {
-      setError(res.error);
-      setIsLoading(false);
+    
+    if (isSignUp) {
+      const password = formData.get("password") as string;
+      const confirmPassword = formData.get("confirmPassword") as string;
+
+      if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+        setIsLoading(false);
+        return;
+      }
+
+      const res = await parentRegister(formData);
+      if (res?.error) {
+        setError(res.error);
+        setIsLoading(false);
+      }
+    } else {
+      const res = await parentLogin(formData);
+      if (res?.error) {
+        setError(res.error);
+        setIsLoading(false);
+      }
     }
   };
 
@@ -37,8 +57,15 @@ export default function ParentLoginPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-pink-500 shadow-lg shadow-purple-500/30 mb-4">
               <Music2 className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white">Parent Portal</h1>
-            <p className="text-slate-400 text-sm mt-1">Track your child&apos;s journey at DIL Academy</p>
+            <h1 className="text-2xl font-bold text-white">
+              {isSignUp ? "Create Parent Account" : "Parent Portal"}
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">
+              {isSignUp 
+                ? "Sign up to track attendance, register kids, and pay fees" 
+                : "Track your child's journey at DIL Academy"
+              }
+            </p>
           </div>
 
           {/* Error */}
@@ -81,17 +108,51 @@ export default function ParentLoginPage() {
               </div>
             </div>
 
+            {isSignUp && (
+              <div className="space-y-2 animate-in slide-in-from-top-1 duration-200">
+                <label className="text-sm font-medium text-slate-300">Confirm Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    name="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white placeholder:text-slate-600 outline-none transition-colors text-sm"
+                  />
+                </div>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={isLoading}
               className="w-full py-3 bg-gradient-to-r from-primary-600 to-pink-600 hover:from-primary-500 hover:to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/25 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 mt-2"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              {isLoading ? "Signing in..." : "Sign In →"}
+              {isLoading 
+                ? (isSignUp ? "Creating account..." : "Signing in...") 
+                : (isSignUp ? "Create Account & Sign In" : "Sign In →")
+              }
             </button>
           </form>
 
-          <p className="text-center text-slate-600 text-xs mt-6">
+          {/* Registration Option Link */}
+          <p className="text-center text-slate-400 text-xs mt-6">
+            {isSignUp ? "Already have a parent account? " : "New to DIL Academy? "}
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError("");
+              }}
+              className="text-primary-400 hover:text-primary-300 font-semibold transition-colors underline"
+            >
+              {isSignUp ? "Sign In →" : "Create Parent Account →"}
+            </button>
+          </p>
+
+          <p className="text-center text-slate-600 text-xs mt-4">
             Academy staff?{" "}
             <a href="/login" className="text-primary-400 hover:text-primary-300 transition-colors">
               Admin Login →

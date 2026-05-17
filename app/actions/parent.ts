@@ -15,6 +15,29 @@ export async function parentLogin(formData: FormData) {
   redirect("/parent/dashboard");
 }
 
+export async function parentRegister(formData: FormData) {
+  const supabase = createClient();
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        role: "parent",
+      }
+    }
+  });
+  if (error) return { error: error.message };
+
+  // Log in immediately after sign up
+  const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+  if (loginError) return { error: loginError.message };
+
+  redirect("/parent/dashboard");
+}
+
 export async function parentLogout() {
   const supabase = createClient();
   await supabase.auth.signOut();
