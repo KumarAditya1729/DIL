@@ -49,6 +49,16 @@ export async function getUserRole() {
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return null;
 
+  // Safe fallback to grant full Admin rights to the owner / developer instantly
+  const email = user.user.email?.toLowerCase() || "";
+  if (
+    email === "admin@dil.academy" ||
+    email.includes("kumaraditya") ||
+    email === "arkashrios@gmail.com"
+  ) {
+    return 'super_admin';
+  }
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')

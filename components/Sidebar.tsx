@@ -14,6 +14,7 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
+  Layers,
   X
 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
@@ -39,6 +40,7 @@ export function Sidebar({
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Students", href: "/dashboard/students", icon: Users },
+    { name: "Batches", href: "/dashboard/batches", icon: Layers },
     { name: "Attendance", href: "/dashboard/attendance", icon: CalendarCheck },
     { name: "Fees & Receipts", href: "/dashboard/fees", icon: CreditCard, adminOnly: true },
     { name: "Past Records", href: "/dashboard/alumni", icon: Archive },
@@ -46,7 +48,7 @@ export function Sidebar({
     { name: "Communication", href: "/dashboard/communication", icon: MessageSquare },
     { name: "Reports", href: "/dashboard/reports", icon: BarChart3, adminOnly: true },
     { name: "Settings", href: "/dashboard/settings", icon: Settings, adminOnly: true },
-  ].filter(item => !item.adminOnly || userRole === 'admin' || userRole === 'owner');
+  ].filter(item => !item.adminOnly || ['admin', 'owner', 'super_admin', 'academy_admin'].includes(userRole || ''));
 
   return (
     <>
