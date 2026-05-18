@@ -1,9 +1,13 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { ensureAdminProfileExists } from "./auth";
 
 export async function fetchStudentsByBatch(batchName: string) {
   const supabase = createClient();
+  
+  // Ensure profile row exists to bypass RLS failures
+  await ensureAdminProfileExists();
   
   // 1. Get the batch ID first (assuming academy isolation is handled by RLS)
   const { data: batchData } = await supabase
@@ -14,12 +18,11 @@ export async function fetchStudentsByBatch(batchName: string) {
 
   if (!batchData) return [];
 
-  // 2. We could join with enrollments, but for now we'll fetch all students
-  // In a real app, there would be a student_batches mapping table
+  // Filter students who are actually enrolled in this specific batch!
   const { data, error } = await supabase
     .from('students')
     .select('id, full_name, admission_number')
-    .limit(50);
+    .eq('batch', batchName);
 
   if (error) {
     console.error("Error fetching students:", error);
@@ -43,6 +46,9 @@ export async function saveDailyAttendance(records: { studentId: string, present:
   if (!user?.user) {
     return { success: false, error: "Unauthorized" };
   }
+
+  // Ensure profile row exists to bypass RLS failures
+  await ensureAdminProfileExists();
 
   const { data: profile } = await supabase.from('profiles').select('academy_id').eq('id', user.user.id).single();
   if (!profile?.academy_id) return { success: false, error: "No academy found" };
