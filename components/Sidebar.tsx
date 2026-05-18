@@ -15,6 +15,7 @@ import {
   BarChart3,
   Settings,
   Layers,
+  GraduationCap,
   X
 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
@@ -40,6 +41,7 @@ export function Sidebar({
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Students", href: "/dashboard/students", icon: Users },
+    { name: "Teachers", href: "/dashboard/teachers", icon: GraduationCap, adminOnly: true },
     { name: "Batches", href: "/dashboard/batches", icon: Layers },
     { name: "Attendance", href: "/dashboard/attendance", icon: CalendarCheck },
     { name: "Fees & Receipts", href: "/dashboard/fees", icon: CreditCard, adminOnly: true },
