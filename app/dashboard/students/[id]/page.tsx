@@ -4,6 +4,7 @@ import { ArrowLeft, Edit, Printer, Send, Activity, BookOpen, AlertTriangle, Load
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { fetchStudentDetails, updateStudent, addProgressNote, fetchStudentAttendanceHistory } from "@/app/actions/students";
+import { fetchBatches } from "@/app/actions/batches";
 import { toast } from "sonner";
 
 type StudentProfile = {
@@ -36,6 +37,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [activeTab, setActiveTab] = useState<"progress" | "attendance">("progress");
   const [attendanceHistory, setAttendanceHistory] = useState<{date: string, status: string, batch: string, notes: string}[]>([]);
+  const [batches, setBatches] = useState<any[]>([]);
 
   const loadStudent = () => {
     setIsLoading(true);
@@ -49,7 +51,9 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
     });
   };
 
-  useEffect(() => { loadStudent(); 
+  useEffect(() => { 
+    loadStudent(); 
+    fetchBatches().then(setBatches).catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
@@ -370,7 +374,20 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Batch</label>
                   <select name="batch" defaultValue={student.batches[0] || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white">
                     <option value="">Select Batch</option>
-                    <option>Junior A (Mon, Wed, Fri)</option><option>Senior B (Tue, Thu, Sat)</option><option>Weekend Pro (Sat, Sun)</option><option>Classical Beginners</option>
+                    {batches.length === 0 ? (
+                      <>
+                        <option>Junior A (Mon, Wed, Fri)</option>
+                        <option>Senior B (Tue, Thu, Sat)</option>
+                        <option>Weekend Pro (Sat, Sun)</option>
+                        <option>Classical Beginners</option>
+                      </>
+                    ) : (
+                      batches.map((b) => (
+                        <option key={b.id} value={b.name}>
+                          {b.name} ({b.style})
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
                 <div className="sm:col-span-2 space-y-1.5">

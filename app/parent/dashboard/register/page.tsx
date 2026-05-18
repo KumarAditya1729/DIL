@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { registerChild } from "@/app/actions/parent";
+import { useState, useEffect } from "react";
+import { registerChild, fetchParentBatches } from "@/app/actions/parent";
 import { UserPlus, Loader2, CheckCircle2, AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -9,6 +9,11 @@ export default function ParentRegistrationPage() {
   const [isPending, setIsPending] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [batches, setBatches] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchParentBatches().then(setBatches).catch(console.error);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -177,9 +182,19 @@ export default function ParentRegistrationPage() {
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white outline-none transition-colors text-sm"
                 >
                   <option value="" className="bg-slate-900 text-slate-300">Select Batch</option>
-                  <option className="bg-slate-900 text-white">Junior A (Mon, Wed, Fri)</option>
-                  <option className="bg-slate-900 text-white">Senior B (Tue, Thu, Sat)</option>
-                  <option className="bg-slate-900 text-white">Weekend Pro (Sat, Sun)</option>
+                  {batches.length === 0 ? (
+                    <>
+                      <option className="bg-slate-900 text-white">Junior A (Mon, Wed, Fri)</option>
+                      <option className="bg-slate-900 text-white">Senior B (Tue, Thu, Sat)</option>
+                      <option className="bg-slate-900 text-white">Weekend Pro (Sat, Sun)</option>
+                    </>
+                  ) : (
+                    batches.map((b) => (
+                      <option key={b.id} value={b.name} className="bg-slate-900 text-white">
+                        {b.name} ({b.style})
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
             </div>

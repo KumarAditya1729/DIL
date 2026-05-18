@@ -3,6 +3,7 @@
 import { ArrowLeft, Upload, CheckCircle2, Loader2, Hash } from "lucide-react";
 import Link from "next/link";
 import { createStudent, getNextAdmissionNumber } from "@/app/actions/students";
+import { fetchBatches } from "@/app/actions/batches";
 import { useState, useRef, useEffect } from "react";
 
 export default function NewAdmissionPage() {
@@ -11,8 +12,11 @@ export default function NewAdmissionPage() {
   const [nextId, setNextId] = useState<string>("Loading...");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [batches, setBatches] = useState<any[]>([]);
+
   useEffect(() => {
     getNextAdmissionNumber().then(setNextId).catch(() => setNextId("DA-2026-001"));
+    fetchBatches().then(setBatches).catch(console.error);
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,9 +144,19 @@ export default function NewAdmissionPage() {
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Assign Batch</label>
               <select name="batch" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary-500 outline-none text-sm dark:text-slate-200">
                 <option value="">Select Batch</option>
-                <option>Junior A (Mon, Wed, Fri)</option>
-                <option>Senior B (Tue, Thu, Sat)</option>
-                <option>Weekend Pro (Sat, Sun)</option>
+                {batches.length === 0 ? (
+                  <>
+                    <option>Junior A (Mon, Wed, Fri)</option>
+                    <option>Senior B (Tue, Thu, Sat)</option>
+                    <option>Weekend Pro (Sat, Sun)</option>
+                  </>
+                ) : (
+                  batches.map((b) => (
+                    <option key={b.id} value={b.name}>
+                      {b.name} ({b.style})
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>

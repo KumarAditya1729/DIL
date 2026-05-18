@@ -161,3 +161,24 @@ export async function registerChild(formData: FormData) {
     return { error: error.message || "Failed to register. Please try again." };
   }
 }
+
+export async function fetchParentBatches() {
+  const supabase = createClient();
+  
+  // Resolve current active academy_id (DIL Academy)
+  const { data: academy } = await supabase
+    .from("academies")
+    .select("id")
+    .limit(1)
+    .single();
+
+  if (!academy?.id) return [];
+
+  const { data: batches } = await supabase
+    .from("batches")
+    .select("*")
+    .eq("academy_id", academy.id)
+    .order("name", { ascending: true });
+
+  return batches || [];
+}
