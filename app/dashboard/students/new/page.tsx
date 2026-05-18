@@ -118,6 +118,10 @@ export default function NewAdmissionPage() {
               <input name="mobileNumber" required type="tel" placeholder="+91 98765 43210" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none text-sm dark:text-slate-200" />
             </div>
             <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">WhatsApp Number <span className="text-slate-400 text-xs">(Optional)</span></label>
+              <input name="whatsappNumber" type="tel" placeholder="+91 98765 43210" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none text-sm dark:text-slate-200" />
+            </div>
+            <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Parent / Guardian Name <span className="text-red-500">*</span></label>
               <input name="parentName" required type="text" placeholder="e.g. Ramesh Sharma" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none text-sm dark:text-slate-200" />
             </div>

@@ -117,6 +117,7 @@ export async function registerChild(formData: FormData) {
   const fullName = formData.get("fullName") as string;
   const parentName = formData.get("parentName") as string;
   const mobileNumber = formData.get("mobileNumber") as string;
+  const whatsappNumber = formData.get("whatsappNumber") as string || null;
   const dob = formData.get("dob") as string;
   const gender = formData.get("gender") as string;
   const danceStyle = formData.get("danceStyle") as string;
@@ -144,6 +145,7 @@ export async function registerChild(formData: FormData) {
       full_name: fullName,
       parent_name: parentName,
       mobile_number: mobileNumber,
+      whatsapp_number: whatsappNumber,
       email: auth.user.email, // Link to the parent email
       date_of_birth: dob || null,
       gender: gender || null,

@@ -40,6 +40,7 @@ export async function createStudent(formData: FormData) {
   const data = {
     full_name: formData.get("fullName") as string,
     mobile_number: formData.get("mobileNumber") as string,
+    whatsapp_number: formData.get("whatsappNumber") as string || null,
     parent_name: formData.get("parentName") as string,
     date_of_birth: formData.get("dob") as string,
     gender: formData.get("gender") as string,
@@ -81,6 +82,7 @@ export async function createStudent(formData: FormData) {
       admission_number: admissionNumber,
       full_name: data.full_name,
       mobile_number: data.mobile_number,
+      whatsapp_number: data.whatsapp_number,
       parent_name: data.parent_name,
       date_of_birth: data.date_of_birth || null,
       gender: data.gender || null,
@@ -146,6 +148,7 @@ export async function fetchStudentDetails(admissionNumber: string) {
     parent: {
       name: data.parent_name || 'N/A',
       phone: data.mobile_number,
+      whatsapp: data.whatsapp_number || undefined,
       email: data.email || 'N/A',
     },
     medical: data.medical_notes || 'No medical conditions reported.',
@@ -220,6 +223,7 @@ export async function updateStudent(admissionNumber: string, formData: FormData)
   const updates = {
     full_name:     formData.get("fullName") as string,
     mobile_number: formData.get("mobileNumber") as string,
+    whatsapp_number: formData.get("whatsappNumber") as string || null,
     parent_name:   formData.get("parentName") as string,
     date_of_birth: formData.get("dob") as string || null,
     gender:        formData.get("gender") as string || null,

@@ -133,7 +133,7 @@ export default function ParentRegistrationPage() {
           {/* Section 2: Parent/Guardian Details */}
           <div className="pt-4 border-t border-white/5 space-y-4">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-pink-400">Parent / Guardian Details</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-400">Parent / Guardian Name <span className="text-red-500">*</span></label>
                 <input
@@ -149,6 +149,15 @@ export default function ParentRegistrationPage() {
                 <input
                   name="mobileNumber"
                   required
+                  type="tel"
+                  placeholder="+91 98765 43210"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white outline-none transition-colors text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-400">WhatsApp Mobile <span className="text-slate-400 text-[10px]">(Optional)</span></label>
+                <input
+                  name="whatsappNumber"
                   type="tel"
                   placeholder="+91 98765 43210"
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white outline-none transition-colors text-sm"

@@ -16,7 +16,7 @@ type StudentProfile = {
   status: string;
   styles: string[];
   batches: string[];
-  parent: { name: string; phone: string; email: string };
+  parent: { name: string; phone: string; email: string; whatsapp?: string };
   medical: string;
   attendance: string;
   attendancePct: number;
@@ -195,9 +195,13 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
               <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 flex justify-between items-center">
                 <div>
                   <p className="font-medium text-slate-900 dark:text-slate-200">{student.parent.name}</p>
-                  <p className="text-sm text-slate-500">{student.parent.phone} • {student.parent.email}</p>
+                  <p className="text-sm text-slate-500">
+                    Call: {student.parent.phone}
+                    {student.parent.whatsapp ? ` • WhatsApp: ${student.parent.whatsapp}` : ""}
+                    {student.parent.email !== 'N/A' ? ` • ${student.parent.email}` : ""}
+                  </p>
                 </div>
-                <a href={`https://wa.me/${student.parent.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="p-2 bg-white dark:bg-slate-700 rounded-lg text-green-600 shadow-sm hover:shadow-md transition-shadow">
+                <a href={`https://wa.me/${(student.parent.whatsapp || student.parent.phone).replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="p-2 bg-white dark:bg-slate-700 rounded-lg text-green-600 shadow-sm hover:shadow-md transition-shadow">
                   <Send className="w-4 h-4" />
                 </a>
               </div>
@@ -343,6 +347,10 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Mobile Number <span className="text-red-500">*</span></label>
                   <input name="mobileNumber" required defaultValue={student.parent.phone} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">WhatsApp Number</label>
+                  <input name="whatsappNumber" defaultValue={student.parent.whatsapp || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>

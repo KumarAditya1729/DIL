@@ -62,6 +62,7 @@ CREATE TABLE students (
     full_name VARCHAR(255) NOT NULL,
     parent_name VARCHAR(255),
     mobile_number VARCHAR(20) NOT NULL,
+    whatsapp_number VARCHAR(20),
     email VARCHAR(255),
     address TEXT,
     date_of_birth DATE,
