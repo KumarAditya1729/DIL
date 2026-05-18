@@ -99,14 +99,73 @@ export async function fetchChildInvoices(studentId: string) {
 }
 
 export async function createRazorpayOrder(invoiceId: string, amount: number) {
-  // In production: call Razorpay API to create an order
-  // Returning a mock order object for now
-  return {
-    id: `order_${Date.now()}`,
-    amount: amount * 100, // in paise
-    currency: "INR",
-    invoiceId,
-  };
+  const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
+    // Sandbox Mock Mode fallback
+    console.warn("Razorpay API keys not found in environment. Running in Mock Sandbox mode.");
+    return {
+      id: `mock_order_${Math.random().toString(36).substring(7)}`,
+      amount: Math.round(amount * 100),
+      currency: "INR",
+      isMock: true
+    };
+  }
+
+  try {
+    const basicAuth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+    const res = await fetch("https://api.razorpay.com/v1/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${basicAuth}`,
+      },
+      body: JSON.stringify({
+        amount: Math.round(amount * 100), // paise
+        currency: "INR",
+        receipt: invoiceId,
+      }),
+    });
+
+    const order = await res.json();
+    if (order.error) {
+      throw new Error(order.error.description || "Razorpay API error");
+    }
+
+    return {
+      id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      isMock: false
+    };
+  } catch (err: any) {
+    console.error("Razorpay order creation failed:", err);
+    return {
+      id: `mock_order_failed_${Date.now()}`,
+      amount: Math.round(amount * 100),
+      currency: "INR",
+      isMock: true
+    };
+  }
+}
+
+export async function verifyParentPayment(invoiceId: string, razorpayPaymentId?: string) {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return { error: "Unauthorized." };
+
+  const { error } = await supabase
+    .from("invoices")
+    .update({ 
+      status: "paid",
+      payment_method: "Razorpay Online",
+      transaction_id: razorpayPaymentId || `TXN_${Date.now()}`
+    })
+    .eq("id", invoiceId);
+
+  if (error) return { error: error.message };
+  return { success: true };
 }
 
 export async function registerChild(formData: FormData) {

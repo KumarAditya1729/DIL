@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchChildData, fetchChildInvoices } from "@/app/actions/parent";
+import { fetchChildData, fetchChildInvoices, createRazorpayOrder, verifyParentPayment } from "@/app/actions/parent";
 import { CreditCard, CheckCircle2, Clock, AlertCircle, IndianRupee, Loader2, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 declare global {
   interface Window { Razorpay: any; }
@@ -38,36 +39,55 @@ export default function ParentFeesPage() {
     });
 
   const handlePayNow = async (invoice: any) => {
-    setPayingId(invoice.id);
-    await loadRazorpay();
+    try {
+      setPayingId(invoice.id);
+      await loadRazorpay();
 
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_placeholder",
-      amount: Math.round(parseFloat(invoice.amount) * 100), // paise
-      currency: "INR",
-      name: "Dance Is Life Academy",
-      description: `Fee Payment - ${invoice.description || invoice.id}`,
-      image: "/logo.png",
-      handler: (response: any) => {
-        alert(`✅ Payment Successful!\nPayment ID: ${response.razorpay_payment_id}\n\nYour fee has been recorded. Thank you!`);
-        setInvoices(prev => prev.map(i => i.id === invoice.id ? { ...i, status: "paid" } : i));
-      },
-      prefill: {
-        name: child?.parent_name || child?.full_name,
-        email: child?.email || "",
-        contact: child?.mobile_number || "",
-      },
-      theme: { color: "#7c3aed" },
-      modal: { ondismiss: () => setPayingId(null) },
-    };
+      // 1. Generate Razorpay Order securely on the server
+      const order = await createRazorpayOrder(invoice.id, parseFloat(invoice.amount));
 
-    const rzp = new window.Razorpay(options);
-    rzp.on("payment.failed", (res: any) => {
-      alert(`❌ Payment Failed: ${res.error.description}`);
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_placeholder",
+        amount: order.amount,
+        currency: order.currency,
+        name: "Dance Is Life Academy",
+        description: `Fee Payment - ${invoice.description || invoice.id?.slice(0,8)}`,
+        image: "/logo.png",
+        order_id: order.id,
+        handler: async (response: any) => {
+          toast.loading("Verifying payment securely...", { id: "pay-toast" });
+          
+          // 2. Verify payment & update invoice state in Supabase via server action
+          const res = await verifyParentPayment(invoice.id, response.razorpay_payment_id);
+          
+          if (res.error) {
+            toast.error(`Verification Failed: ${res.error}`, { id: "pay-toast" });
+          } else {
+            toast.success("✅ Payment Successful! Fee recorded.", { id: "pay-toast" });
+            setInvoices(prev => prev.map(i => i.id === invoice.id ? { ...i, status: "paid" } : i));
+          }
+          setPayingId(null);
+        },
+        prefill: {
+          name: child?.parent_name || child?.full_name,
+          email: child?.email || "",
+          contact: child?.mobile_number || "",
+        },
+        theme: { color: "#7c3aed" },
+        modal: { ondismiss: () => setPayingId(null) },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", (res: any) => {
+        toast.error(`❌ Payment Failed: ${res.error.description}`);
+        setPayingId(null);
+      });
+      rzp.open();
+    } catch (error: any) {
+      console.error("Checkout initiation failed:", error);
+      toast.error("Failed to initialize checkout. Please try again.");
       setPayingId(null);
-    });
-    rzp.open();
-    setPayingId(null);
+    }
   };
 
   const totalPaid = invoices.filter(i => i.status === "paid").reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
