@@ -131,8 +131,12 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
               </div>
               <div className="mt-14">
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">{student.name}</h2>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 mt-1 rounded-md text-xs font-medium ${
-                  student.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 mt-1 rounded-md text-xs font-medium capitalize ${
+                  student.status === 'active' 
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                    : student.status === 'alumni'
+                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                    : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
                 }`}>
                   {student.status}
                 </span>

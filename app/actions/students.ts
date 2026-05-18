@@ -292,3 +292,21 @@ export async function restoreStudent(admissionNumber: string) {
   revalidatePath("/dashboard/alumni");
   return { success: true };
 }
+
+export async function deleteStudent(id: string) {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return { error: "Unauthorized." };
+
+  await ensureAdminProfileExists();
+
+  const { error } = await supabase
+    .from('students')
+    .delete()
+    .eq('id', id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/students");
+  return { success: true };
+}

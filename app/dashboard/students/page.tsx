@@ -4,6 +4,8 @@ import { Plus, Search, Filter, Edit, Trash2, GraduationCap } from "lucide-react"
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { deleteStudent } from "@/app/actions/students";
+import { toast } from "sonner";
 
 type Student = {
   id: string;
@@ -25,7 +27,7 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  useEffect(() => {
+  const loadStudents = () => {
     const supabase = createClient();
     supabase
       .from("students")
@@ -37,7 +39,22 @@ export default function StudentsPage() {
         setFiltered(list);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    loadStudents();
   }, []);
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete the student "${name}"?`)) return;
+    const res = await deleteStudent(id);
+    if (res.error) {
+      toast.error(res.error);
+    } else {
+      toast.success("Student deleted successfully");
+      loadStudents();
+    }
+  };
 
   useEffect(() => {
     let result = students;
@@ -75,9 +92,41 @@ export default function StudentsPage() {
         </Link>
       </div>
 
+      {/* Segmented Quick Filter Status Tabs */}
+      <div className="flex flex-wrap gap-2 pt-2">
+        {[
+          { id: "all", label: "All Students", count: students.length },
+          { id: "active", label: "Active Students", count: students.filter(s => s.status === "active").length, color: "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" },
+          { id: "inactive", label: "Inactive Students", count: students.filter(s => s.status === "inactive").length, color: "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800" },
+          { id: "alumni", label: "Alumni Students", count: students.filter(s => s.status === "alumni").length, color: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800" }
+        ].map((tab) => {
+          const isActive = statusFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                isActive
+                  ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-950 shadow-md scale-105"
+                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                isActive 
+                  ? "bg-white/20 text-white dark:bg-slate-950/20 dark:text-slate-950" 
+                  : tab.color ? tab.color : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+              }`}>
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-        {/* Search & Filter Bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3 items-center bg-slate-50/50 dark:bg-slate-800/20">
+        {/* Search Bar */}
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex gap-3 items-center bg-slate-50/50 dark:bg-slate-800/20">
           <div className="relative flex-1 w-full">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -87,17 +136,6 @@ export default function StudentsPage() {
               placeholder="Search by name, ID, mobile, or batch..."
               className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none text-sm dark:text-slate-200"
             />
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-600 dark:text-slate-300 outline-none"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
           </div>
         </div>
 
@@ -161,17 +199,19 @@ export default function StudentsPage() {
                       <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
                         student.status === "active"
                           ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          : student.status === "alumni"
+                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
                           : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                       }`}>
-                        {student.status === "active" ? "Active" : "Inactive"}
+                        {student.status === "active" ? "Active" : student.status === "alumni" ? "Alumni" : "Inactive"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button title="Edit student" className="p-1.5 text-slate-400 hover:text-primary-600 rounded-md hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                        <Link href={"/dashboard/students/" + student.admission_number} title="Edit student" className="p-1.5 text-slate-400 hover:text-primary-600 rounded-md hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
                           <Edit className="w-4 h-4" />
-                        </button>
-                        <button title="Remove student" className="p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        </Link>
+                        <button onClick={() => handleDelete(student.id, student.full_name)} title="Remove student" className="p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

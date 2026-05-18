@@ -113,6 +113,9 @@ export async function deleteBatch(id: string) {
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return { error: "Unauthorized" };
 
+  // Ensure profile row exists to bypass RLS
+  await ensureAdminProfileExists();
+
   const { error } = await supabase.from("batches").delete().eq("id", id);
 
   if (error) return { error: "Cannot delete batch. Students may still be enrolled." };
