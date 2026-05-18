@@ -145,11 +145,7 @@ export default function NewAdmissionPage() {
               <select name="batch" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary-500 outline-none text-sm dark:text-slate-200">
                 <option value="">Select Batch</option>
                 {batches.length === 0 ? (
-                  <>
-                    <option>Junior A (Mon, Wed, Fri)</option>
-                    <option>Senior B (Tue, Thu, Sat)</option>
-                    <option>Weekend Pro (Sat, Sun)</option>
-                  </>
+                  <option disabled value="">⚠️ No batches created. Create one first in Batches module!</option>
                 ) : (
                   batches.map((b) => (
                     <option key={b.id} value={b.name}>

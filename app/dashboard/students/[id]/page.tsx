@@ -375,12 +375,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                   <select name="batch" defaultValue={student.batches[0] || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white">
                     <option value="">Select Batch</option>
                     {batches.length === 0 ? (
-                      <>
-                        <option>Junior A (Mon, Wed, Fri)</option>
-                        <option>Senior B (Tue, Thu, Sat)</option>
-                        <option>Weekend Pro (Sat, Sun)</option>
-                        <option>Classical Beginners</option>
-                      </>
+                      <option disabled value="">⚠️ No batches created. Create one first in Batches module!</option>
                     ) : (
                       batches.map((b) => (
                         <option key={b.id} value={b.name}>

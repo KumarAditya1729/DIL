@@ -183,11 +183,7 @@ export default function ParentRegistrationPage() {
                 >
                   <option value="" className="bg-slate-900 text-slate-300">Select Batch</option>
                   {batches.length === 0 ? (
-                    <>
-                      <option className="bg-slate-900 text-white">Junior A (Mon, Wed, Fri)</option>
-                      <option className="bg-slate-900 text-white">Senior B (Tue, Thu, Sat)</option>
-                      <option className="bg-slate-900 text-white">Weekend Pro (Sat, Sun)</option>
-                    </>
+                    <option disabled value="" className="bg-slate-900 text-slate-400">⚠️ No batches created by administrator yet.</option>
                   ) : (
                     batches.map((b) => (
                       <option key={b.id} value={b.name} className="bg-slate-900 text-white">
