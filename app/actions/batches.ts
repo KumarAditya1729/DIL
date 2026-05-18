@@ -2,11 +2,15 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { ensureAdminProfileExists } from "./auth";
 
 export async function fetchBatches() {
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return [];
+
+  // Ensure administrator profile row exists in PostgreSQL
+  await ensureAdminProfileExists();
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -43,6 +47,9 @@ export async function createBatch(formData: FormData) {
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return { error: "Unauthorized" };
+
+  // Ensure administrator profile row exists in PostgreSQL
+  await ensureAdminProfileExists();
 
   const { data: profile } = await supabase
     .from("profiles")

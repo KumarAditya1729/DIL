@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { ensureAdminProfileExists } from "./auth";
 
 /**
  * Generates the next sequential admission number for the current year.
@@ -32,6 +33,9 @@ export async function getNextAdmissionNumber(): Promise<string> {
 
 export async function createStudent(formData: FormData) {
   const supabase = createClient();
+
+  // Ensure administrator profile row exists in PostgreSQL
+  await ensureAdminProfileExists();
 
   const data = {
     full_name: formData.get("fullName") as string,
@@ -209,6 +213,9 @@ export async function updateStudent(admissionNumber: string, formData: FormData)
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return { error: "Unauthorized." };
+
+  // Ensure administrator profile row exists in PostgreSQL
+  await ensureAdminProfileExists();
 
   const updates = {
     full_name:     formData.get("fullName") as string,

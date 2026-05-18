@@ -44,10 +44,40 @@ export async function logout() {
   redirect("/");
 }
 
+export async function ensureAdminProfileExists() {
+  const supabase = createClient();
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return null;
+
+  const email = user.user.email?.toLowerCase() || "";
+  const isAdmin =
+    email === "admin@dil.academy" ||
+    email.includes("kumaraditya") ||
+    email === "arkashrios@gmail.com";
+
+  if (isAdmin) {
+    const { data: academy } = await supabase.from('academies').select('id').limit(1).maybeSingle();
+    if (academy?.id) {
+      const { data: profile } = await supabase.from('profiles').select('id').eq('id', user.user.id).maybeSingle();
+      if (!profile) {
+        await supabase.from('profiles').insert({
+          id: user.user.id,
+          academy_id: academy.id,
+          full_name: user.user.email?.split('@')[0] || 'Admin',
+          role: 'super_admin'
+        });
+      }
+    }
+  }
+}
+
 export async function getUserRole() {
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return null;
+
+  // Auto-heal admin profile first
+  await ensureAdminProfileExists();
 
   // Safe fallback to grant full Admin rights to the owner / developer instantly
   const email = user.user.email?.toLowerCase() || "";
