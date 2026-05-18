@@ -206,12 +206,16 @@ ALTER TABLE attendance_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Create helper function to get current user's academy
 CREATE OR REPLACE FUNCTION get_current_academy_id()
 RETURNS UUID AS $$
   SELECT academy_id FROM profiles WHERE id = auth.uid() LIMIT 1;
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
 
 -- Profiles: Users can see profiles in their own academy
 CREATE POLICY "Users can view profiles in their academy" 
@@ -243,10 +247,50 @@ CREATE POLICY "Tenant isolation for events"
 ON events FOR ALL 
 USING (academy_id = get_current_academy_id());
 
+-- Student Progress: Tenant Isolation
+CREATE POLICY "Tenant isolation for student_progress"
+ON student_progress FOR ALL
+USING (academy_id = get_current_academy_id());
+
+-- Attendance: Tenant Isolation
+CREATE POLICY "Tenant isolation for attendance"
+ON attendance FOR ALL
+USING (academy_id = get_current_academy_id());
+
+-- Attendance Records: Tenant Isolation
+CREATE POLICY "Tenant isolation for attendance_records"
+ON attendance_records FOR ALL
+USING (attendance_id IN (SELECT id FROM attendance WHERE academy_id = get_current_academy_id()));
+
+-- Event Participants: Tenant Isolation
+CREATE POLICY "Tenant isolation for event_participants"
+ON event_participants FOR ALL
+USING (event_id IN (SELECT id FROM events WHERE academy_id = get_current_academy_id()));
+
+-- Event Expenses: Tenant Isolation
+CREATE POLICY "Tenant isolation for event_expenses"
+ON event_expenses FOR ALL
+USING (event_id IN (SELECT id FROM events WHERE academy_id = get_current_academy_id()));
+
+-- Notifications: Tenant Isolation
+CREATE POLICY "Tenant isolation for notifications"
+ON notifications FOR ALL
+USING (academy_id = get_current_academy_id());
+
+-- Audit Logs: Tenant Isolation
+CREATE POLICY "Tenant isolation for audit_logs"
+ON audit_logs FOR ALL
+USING (academy_id = get_current_academy_id());
+
+-- Subscriptions: Anyone can read
+CREATE POLICY "Anyone can view subscriptions"
+ON subscriptions FOR SELECT
+USING (true);
+
 -- Security Definer functions for Super Admin tasks
 CREATE OR REPLACE FUNCTION is_super_admin()
 RETURNS BOOLEAN AS $$
   SELECT EXISTS (
     SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'super_admin'
   );
-$$ LANGUAGE sql SECURITY DEFINER;
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
