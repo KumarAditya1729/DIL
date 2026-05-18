@@ -15,21 +15,35 @@ export async function parentLogin(formData: FormData) {
   redirect("/parent/dashboard");
 }
 
+import { createAdminClient } from "@/lib/supabase/admin";
+
 export async function parentRegister(formData: FormData) {
   const supabase = createClient();
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        role: "parent",
+  const adminClient = createAdminClient();
+  if (adminClient) {
+    // Automatically confirm email during signup to avoid "Email not confirmed" blocks
+    const { error: authError } = await adminClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { role: "parent" }
+    });
+    if (authError) return { error: authError.message };
+  } else {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          role: "parent",
+        }
       }
-    }
-  });
-  if (error) return { error: error.message };
+    });
+    if (error) return { error: error.message };
+  }
 
   // Log in immediately after sign up
   const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
