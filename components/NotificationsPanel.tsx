@@ -1,27 +1,60 @@
 "use client";
 
-import { Bell, CheckCheck, GraduationCap, CreditCard, CalendarDays, Info } from "lucide-react";
-import { useState } from "react";
-
-const defaultNotifications = [
-  { id: 1, title: "New Student Enrolled", message: "A new student has been added to the Morning Batch.", time: "2 min ago", unread: true, icon: GraduationCap, color: "text-blue-500 bg-blue-50 dark:bg-blue-900/20" },
-  { id: 2, title: "Fee Payment Received", message: "₹4,500 received from Arjun Mehta for June batch fees.", time: "1 hour ago", unread: true, icon: CreditCard, color: "text-green-500 bg-green-50 dark:bg-green-900/20" },
-  { id: 3, title: "Upcoming Event", message: "Annual Dance Showcase is scheduled for this Saturday.", time: "3 hours ago", unread: true, icon: CalendarDays, color: "text-purple-500 bg-purple-50 dark:bg-purple-900/20" },
-  { id: 4, title: "Attendance Alert", message: "5 students missed today's Contemporary batch.", time: "5 hours ago", unread: false, icon: Info, color: "text-orange-500 bg-orange-50 dark:bg-orange-900/20" },
-];
+import { Bell, CheckCheck, Info, MessageSquare, Mail } from "lucide-react";
+import { useState, useEffect } from "react";
+import { fetchLiveNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/app/actions/communication";
 
 export function NotificationsPanel() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(defaultNotifications);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
-  const unreadCount = notifications.filter(n => n.unread).length;
-
-  const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  const loadNotifications = () => {
+    fetchLiveNotifications().then(setNotifications).catch(console.error);
   };
 
-  const markOneRead = (id: number) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+  useEffect(() => {
+    loadNotifications();
+    // Periodically fetch notifications every 15 seconds for real-time experience!
+    const interval = setInterval(loadNotifications, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  const handleMarkAllRead = async () => {
+    await markAllNotificationsAsRead();
+    loadNotifications();
+  };
+
+  const handleMarkOneRead = async (id: string) => {
+    await markNotificationAsRead(id);
+    loadNotifications();
+  };
+
+  const getIcon = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case "whatsapp":
+        return MessageSquare;
+      case "email":
+        return Mail;
+      case "sms":
+        return Bell;
+      default:
+        return Info;
+    }
+  };
+
+  const getColor = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case "whatsapp":
+        return "text-green-500 bg-green-50 dark:bg-green-900/20";
+      case "email":
+        return "text-blue-500 bg-blue-50 dark:bg-blue-900/20";
+      case "sms":
+        return "text-purple-500 bg-purple-50 dark:bg-purple-900/20";
+      default:
+        return "text-slate-500 bg-slate-50 dark:bg-slate-900/20";
+    }
   };
 
   return (
@@ -50,7 +83,7 @@ export function NotificationsPanel() {
                 <p className="text-xs text-slate-500 mt-0.5">{unreadCount} unread</p>
               </div>
               <button 
-                onClick={markAllRead}
+                onClick={handleMarkAllRead}
                 disabled={unreadCount === 0}
                 className="flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors"
               >
@@ -61,28 +94,39 @@ export function NotificationsPanel() {
 
             {/* List */}
             <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
-              {notifications.map((n) => {
-                const Icon = n.icon;
-                return (
-                  <div 
-                    key={n.id} 
-                    onClick={() => markOneRead(n.id)}
-                    className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer flex gap-3 ${n.unread ? 'bg-primary-50/30 dark:bg-primary-900/10' : ''}`}
-                  >
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${n.color}`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start gap-2">
-                        <p className={`text-sm font-semibold leading-snug ${n.unread ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>{n.title}</p>
-                        {n.unread && <span className="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></span>}
+              {notifications.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                  <Bell className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
+                  <p className="text-sm font-medium">All caught up!</p>
+                  <p className="text-xs text-slate-400 mt-1">No announcements or broadcasts yet.</p>
+                </div>
+              ) : (
+                notifications.map((n) => {
+                  const Icon = getIcon(n.type);
+                  const color = getColor(n.type);
+                  return (
+                    <div 
+                      key={n.id} 
+                      onClick={() => handleMarkOneRead(n.id)}
+                      className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer flex gap-3 ${!n.is_read ? 'bg-primary-50/30 dark:bg-primary-900/10' : ''}`}
+                    >
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+                        <Icon className="w-4 h-4" />
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">{n.message}</p>
-                      <p className="text-[10px] text-slate-400 mt-1.5">{n.time}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <p className={`text-sm font-semibold leading-snug ${!n.is_read ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>{n.title}</p>
+                          {!n.is_read && <span className="w-2 h-2 bg-primary-500 rounded-full mt-1.5 flex-shrink-0"></span>}
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 whitespace-pre-wrap">{n.message}</p>
+                        <p className="text-[10px] text-slate-400 mt-1.5">
+                          {new Date(n.created_at).toLocaleDateString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
             {/* Footer */}
