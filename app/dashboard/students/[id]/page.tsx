@@ -17,6 +17,7 @@ type StudentProfile = {
   styles: string[];
   batches: string[];
   parent: { name: string; phone: string; email: string; whatsapp?: string };
+  aadhar: { name: string; number: string };
   medical: string;
   attendance: string;
   attendancePct: number;
@@ -192,6 +193,14 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                   {student.batches.map((batch, i) => <span key={i} className="px-2.5 py-1 text-xs font-medium rounded-md bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400">{batch}</span>)}
                 </div>
               </div>
+              <div>
+                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Aadhar Card Holder</p>
+                <p className="font-medium text-slate-900 dark:text-slate-200">{student.aadhar.name}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Aadhar Card Number</p>
+                <p className="font-medium text-slate-900 dark:text-slate-200">{student.aadhar.number}</p>
+              </div>
             </div>
 
             <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
@@ -363,6 +372,14 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Parent / Guardian Name</label>
                   <input name="parentName" defaultValue={student.parent.name !== 'N/A' ? student.parent.name : ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Aadhar Card Holder Name</label>
+                  <input name="aadharName" defaultValue={student.aadhar.name !== 'N/A' ? student.aadhar.name : ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Aadhar Card Number</label>
+                  <input name="aadharNumber" type="text" inputMode="numeric" pattern="[0-9]{12}" maxLength={12} defaultValue={student.aadhar.number !== 'N/A' ? student.aadhar.number : ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Date of Birth</label>

@@ -3,14 +3,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. SaaS & Tenants Management
-CREATE TABLE subscriptions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    plan_name VARCHAR(50) NOT NULL,
-    max_students INTEGER NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    features JSONB
-);
-
 CREATE TABLE academies (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
@@ -20,7 +12,6 @@ CREATE TABLE academies (
     contact_phone VARCHAR(20),
     address TEXT,
     theme_color VARCHAR(20) DEFAULT '#db2777',
-    subscription_id UUID REFERENCES subscriptions(id),
     subscription_status VARCHAR(50) DEFAULT 'trial',
     trial_ends_at TIMESTAMP WITH TIME ZONE,
     razorpay_customer_id VARCHAR(255),
@@ -65,6 +56,8 @@ CREATE TABLE students (
     whatsapp_number VARCHAR(20),
     email VARCHAR(255),
     address TEXT,
+    aadhar_name VARCHAR(255),
+    aadhar_number VARCHAR(12),
     date_of_birth DATE,
     gender VARCHAR(20),
     join_date DATE DEFAULT CURRENT_DATE,
@@ -209,7 +202,6 @@ ALTER TABLE event_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Create helper function to get current user's academy
 CREATE OR REPLACE FUNCTION get_current_academy_id()
@@ -281,11 +273,6 @@ USING (academy_id = get_current_academy_id());
 CREATE POLICY "Tenant isolation for audit_logs"
 ON audit_logs FOR ALL
 USING (academy_id = get_current_academy_id());
-
--- Subscriptions: Anyone can read
-CREATE POLICY "Anyone can view subscriptions"
-ON subscriptions FOR SELECT
-USING (true);
 
 -- Security Definer functions for Super Admin tasks
 CREATE OR REPLACE FUNCTION is_super_admin()
