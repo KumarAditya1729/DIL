@@ -211,7 +211,7 @@ ALTER TABLE event_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE event_expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Create helper function to get current user's academy
 CREATE OR REPLACE FUNCTION get_current_academy_id()
@@ -285,9 +285,15 @@ ON audit_logs FOR ALL
 USING (academy_id = get_current_academy_id());
 
 -- Subscriptions: Anyone can read
-CREATE POLICY "Anyone can view subscriptions"
-ON subscriptions FOR SELECT
-USING (true);
+DO $$
+BEGIN
+  IF to_regclass('public.subscriptions') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Anyone can view subscriptions" ON subscriptions;
+    CREATE POLICY "Anyone can view subscriptions"
+    ON subscriptions FOR SELECT
+    USING (true);
+  END IF;
+END $$;
 
 -- Security Definer functions for Super Admin tasks
 CREATE OR REPLACE FUNCTION is_super_admin()
