@@ -168,11 +168,11 @@ export default function NewAdmissionPage() {
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Courses</label>
               <select name="danceStyle" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary-500 outline-none text-sm dark:text-slate-200">
                 <option value="">Select Course</option>
-                <option>Hip Hop</option>
-                <option>Classical / Kathak</option>
-                <option>Bollywood</option>
-                <option>Contemporary</option>
-                <option>Freestyle</option>
+                <option>Dance</option>
+                <option>Music</option>
+                <option>Art Zone</option>
+                <option>Kathak</option>
+                <option>Martial Arts</option>
               </select>
             </div>
             <div className="space-y-2">

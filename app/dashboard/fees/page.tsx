@@ -385,7 +385,7 @@ export default function FeesPage() {
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
                   <input
                     name="description"
-                    placeholder="e.g. Monthly tuition fee – Hip Hop batch"
+                    placeholder="e.g. Monthly tuition fee – Dance batch"
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white"
                   />
                 </div>

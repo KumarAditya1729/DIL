@@ -221,11 +221,11 @@ export default function ParentRegistrationPage() {
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white outline-none transition-colors text-sm"
                 >
                   <option value="" className="bg-slate-900 text-slate-300">Select Course</option>
-                  <option className="bg-slate-900 text-white">Hip Hop</option>
-                  <option className="bg-slate-900 text-white">Classical / Kathak</option>
-                  <option className="bg-slate-900 text-white">Bollywood</option>
-                  <option className="bg-slate-900 text-white">Contemporary</option>
-                  <option className="bg-slate-900 text-white">Freestyle</option>
+                  <option className="bg-slate-900 text-white">Dance</option>
+                  <option className="bg-slate-900 text-white">Music</option>
+                  <option className="bg-slate-900 text-white">Art Zone</option>
+                  <option className="bg-slate-900 text-white">Kathak</option>
+                  <option className="bg-slate-900 text-white">Martial Arts</option>
                 </select>
               </div>
               <div className="space-y-2">
