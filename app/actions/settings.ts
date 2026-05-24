@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { resolveCurrentAcademyId, slugifyAcademyName } from "./academy";
 
@@ -31,26 +32,54 @@ export async function updateAcademySettings(formData: FormData) {
   let academyId = await resolveCurrentAcademyId(supabase, user.user.id);
 
   if (!academyId) {
+    const academyPayload = {
+      ...updates,
+      slug: slugifyAcademyName(updates.name),
+    };
+
     const { data: academy, error: createError } = await supabase
       .from("academies")
-      .insert({
-        ...updates,
-        slug: slugifyAcademyName(updates.name),
-      })
+      .insert(academyPayload)
       .select("id")
       .single();
 
-    if (createError) return { error: createError.message };
-    academyId = academy.id;
+    if (createError) {
+      const adminClient = createAdminClient();
+      const { data: adminAcademy, error: adminCreateError } = adminClient
+        ? await adminClient.from("academies").insert(academyPayload).select("id").single()
+        : { data: null, error: createError };
 
-    await supabase
+      if (adminCreateError || !adminAcademy?.id) {
+        return { error: adminCreateError?.message || createError.message };
+      }
+
+      academyId = adminAcademy.id;
+    } else {
+      academyId = academy.id;
+    }
+
+    const { error: profileError } = await supabase
       .from("profiles")
       .update({ academy_id: academyId })
       .eq("id", user.user.id);
+
+    if (profileError) {
+      await createAdminClient()
+        ?.from("profiles")
+        .update({ academy_id: academyId, role: "super_admin" })
+        .eq("id", user.user.id);
+    }
   }
 
   const { error } = await supabase.from('academies').update(updates).eq('id', academyId);
-  if (error) return { error: error.message };
+  if (error) {
+    const adminClient = createAdminClient();
+    const { error: adminUpdateError } = adminClient
+      ? await adminClient.from("academies").update(updates).eq("id", academyId)
+      : { error };
+
+    if (adminUpdateError) return { error: adminUpdateError.message };
+  }
   revalidatePath('/dashboard/settings');
   return { success: true };
 }

@@ -241,7 +241,13 @@ WITH CHECK (id = get_current_academy_id() OR auth.uid() IN (SELECT id FROM profi
 
 CREATE POLICY "Admins can create academies"
 ON academies FOR INSERT
-WITH CHECK (auth.uid() IN (SELECT id FROM profiles WHERE role IN ('super_admin', 'academy_admin')));
+WITH CHECK (
+    auth.uid() IS NOT NULL
+    AND (
+        NOT EXISTS (SELECT 1 FROM academies)
+        OR auth.uid() IN (SELECT id FROM profiles WHERE role IN ('super_admin', 'academy_admin'))
+    )
+);
 
 -- Students: Tenant Isolation
 CREATE POLICY "Tenant isolation for students" 
