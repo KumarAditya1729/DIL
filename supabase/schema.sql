@@ -61,6 +61,8 @@ CREATE TABLE students (
     date_of_birth DATE,
     gender VARCHAR(20),
     join_date DATE DEFAULT CURRENT_DATE,
+    dance_style VARCHAR(100),
+    batch VARCHAR(255),
     medical_notes TEXT,
     photo_url TEXT,
     status VARCHAR(50) DEFAULT 'active',
@@ -107,12 +109,15 @@ CREATE TABLE invoices (
     student_id UUID REFERENCES students(id),
     invoice_number VARCHAR(100) NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
-    due_date DATE NOT NULL,
+    due_date DATE,
     month VARCHAR(20) NOT NULL,
-    year INTEGER NOT NULL,
+    year INTEGER NOT NULL DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)::INTEGER,
+    description TEXT,
     status VARCHAR(20) DEFAULT 'pending',
     razorpay_order_id VARCHAR(255),
     razorpay_payment_id VARCHAR(255),
+    payment_method VARCHAR(100),
+    transaction_id VARCHAR(255),
     paid_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(academy_id, invoice_number)
@@ -214,10 +219,29 @@ CREATE POLICY "Users can view profiles in their academy"
 ON profiles FOR SELECT 
 USING (academy_id = get_current_academy_id() OR role = 'super_admin');
 
+-- Profiles: Users can create and repair their own profile row
+CREATE POLICY "Users can insert their own profile"
+ON profiles FOR INSERT
+WITH CHECK (id = auth.uid());
+
+CREATE POLICY "Users can update their own profile"
+ON profiles FOR UPDATE
+USING (id = auth.uid())
+WITH CHECK (id = auth.uid());
+
 -- Academies: Users can view their own academy
 CREATE POLICY "Users can view their academy" 
 ON academies FOR SELECT 
 USING (id = get_current_academy_id() OR auth.uid() IN (SELECT id FROM profiles WHERE role = 'super_admin'));
+
+CREATE POLICY "Users can update their academy"
+ON academies FOR UPDATE
+USING (id = get_current_academy_id() OR auth.uid() IN (SELECT id FROM profiles WHERE role = 'super_admin'))
+WITH CHECK (id = get_current_academy_id() OR auth.uid() IN (SELECT id FROM profiles WHERE role = 'super_admin'));
+
+CREATE POLICY "Admins can create academies"
+ON academies FOR INSERT
+WITH CHECK (auth.uid() IN (SELECT id FROM profiles WHERE role IN ('super_admin', 'academy_admin')));
 
 -- Students: Tenant Isolation
 CREATE POLICY "Tenant isolation for students" 

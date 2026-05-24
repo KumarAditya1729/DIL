@@ -18,13 +18,13 @@ export default async function ReportsPage() {
     supabase.from("students").select("*", { count: "exact", head: true }),
     supabase.from("students").select("*", { count: "exact", head: true }).eq("status", "active"),
     supabase.from("invoices").select("amount, status, created_at, month"),
-    supabase.from("attendance_records").select("present"),
+    supabase.from("attendance_records").select("status"),
     supabase.from("students").select("created_at, status").order("created_at"),
   ]);
 
   const totalRevenue = invoices?.filter(i => i.status === "paid").reduce((s, i) => s + Number(i.amount || 0), 0) || 0;
   const pendingDues  = invoices?.filter(i => i.status !== "paid").reduce((s, i) => s + Number(i.amount || 0), 0) || 0;
-  const presentCount = attendanceRecords?.filter(r => r.present).length || 0;
+  const presentCount = attendanceRecords?.filter(r => r.status === "present").length || 0;
   const totalMarked  = attendanceRecords?.length || 0;
   const attendancePct = totalMarked > 0 ? Math.round((presentCount / totalMarked) * 100) : 0;
 

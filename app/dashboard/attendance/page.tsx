@@ -272,7 +272,7 @@ export default function AttendancePage() {
                           </td>
                           <td className="px-6 py-4 text-center">
                             {student.present === true && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"><CheckCircle2 className="w-3.5 h-3.5" /> Present</span>}
-                            {student.present === false && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-green-400"><XCircle className="w-3.5 h-3.5" /> Absent</span>}
+                            {student.present === false && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"><XCircle className="w-3.5 h-3.5" /> Absent</span>}
                             {student.present === null && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">Not Marked</span>}
                           </td>
                           <td className="px-6 py-4 text-right">

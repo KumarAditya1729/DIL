@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { resolveCurrentAcademyId } from "./academy";
 
 export async function fetchEvents() {
   const supabase = createClient();
@@ -57,11 +58,8 @@ export async function createEvent(formData: FormData) {
   
   if (!user?.user) return { error: "Unauthorized" };
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('academy_id')
-    .eq('id', user.user.id)
-    .single();
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy found" };
 
   const title = formData.get("title") as string;
   const event_date = formData.get("date") as string;
@@ -79,7 +77,7 @@ export async function createEvent(formData: FormData) {
   const stuffedDescription = "JSON:" + JSON.stringify({ description, cover_image, gallery: [] });
 
   const { error } = await supabase.from('events').insert({
-    academy_id: profile?.academy_id,
+    academy_id: academyId,
     title,
     event_date,
     event_time,

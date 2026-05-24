@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureAdminProfileExists } from "./auth";
 import { revalidatePath } from "next/cache";
+import { resolveCurrentAcademyId } from "./academy";
 
 export type Teacher = {
   id: string;
@@ -21,20 +22,14 @@ export async function fetchTeachers(): Promise<Teacher[]> {
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return [];
 
-  // Fetch admin profile to get academy_id
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("academy_id")
-    .eq("id", user.user.id)
-    .single();
-
-  if (!profile?.academy_id) return [];
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return [];
 
   // Fetch all profiles with role = 'teacher' for this academy
   const { data: teachersData } = await supabase
     .from("profiles")
     .select("*")
-    .eq("academy_id", profile.academy_id)
+    .eq("academy_id", academyId)
     .eq("role", "teacher")
     .order("full_name", { ascending: true });
 
@@ -44,7 +39,7 @@ export async function fetchTeachers(): Promise<Teacher[]> {
   const { data: batches } = await supabase
     .from("batches")
     .select("name, instructor_id")
-    .eq("academy_id", profile.academy_id);
+    .eq("academy_id", academyId);
 
   // Fetch emails from auth.users (if service role is available) or use metadata
   const adminClient = createAdminClient();
@@ -99,14 +94,8 @@ export async function createTeacher(formData: FormData) {
     return { error: "Name, Email, and Phone number are required." };
   }
 
-  // Get academy_id from current admin
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("academy_id")
-    .eq("id", user.user.id)
-    .single();
-
-  if (!profile?.academy_id) {
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) {
     return { error: "No associated academy found for your profile." };
   }
 
@@ -132,7 +121,7 @@ export async function createTeacher(formData: FormData) {
     // 2. Insert corresponding profile row linked to the correct academy
     const { error: profileError } = await supabase.from("profiles").insert({
       id: authUser.user.id,
-      academy_id: profile.academy_id,
+      academy_id: academyId,
       role: "teacher",
       full_name: fullName,
       phone,
@@ -160,6 +149,8 @@ export async function deleteTeacher(id: string) {
   if (!user?.user) return { error: "Unauthorized." };
 
   await ensureAdminProfileExists();
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No associated academy found for your profile." };
 
   const adminClient = createAdminClient();
   if (!adminClient) {
@@ -173,7 +164,8 @@ export async function deleteTeacher(id: string) {
     const { error: profileError } = await supabase
       .from("profiles")
       .delete()
-      .eq("id", id);
+      .eq("id", id)
+      .eq("academy_id", academyId);
 
     if (profileError) {
       return { error: "Cannot delete teacher. They might be assigned to active batches." };

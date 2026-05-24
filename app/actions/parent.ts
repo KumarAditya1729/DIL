@@ -90,14 +90,13 @@ export async function fetchChildAttendance(studentId: string) {
   const supabase = createClient();
   const { data } = await supabase
     .from("attendance_records")
-    .select("present, attendance(date)")
+    .select("status, attendance(date)")
     .eq("student_id", studentId)
-    .order("created_at", { ascending: false })
     .limit(30);
 
   return (data || []).map((r: any) => ({
     date: r.attendance?.date,
-    present: r.present,
+    present: r.status === "present",
   }));
 }
 
@@ -173,6 +172,8 @@ export async function verifyParentPayment(invoiceId: string, razorpayPaymentId?:
     .from("invoices")
     .update({ 
       status: "paid",
+      razorpay_payment_id: razorpayPaymentId || null,
+      paid_at: new Date().toISOString(),
       payment_method: "Razorpay Online",
       transaction_id: razorpayPaymentId || `TXN_${Date.now()}`
     })

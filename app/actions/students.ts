@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { ensureAdminProfileExists } from "./auth";
+import { resolveCurrentAcademyId } from "./academy";
 
 /**
  * Generates the next sequential admission number for the current year.
@@ -42,6 +43,7 @@ export async function createStudent(formData: FormData) {
     mobile_number: formData.get("mobileNumber") as string,
     whatsapp_number: formData.get("whatsappNumber") as string || null,
     parent_name: formData.get("parentName") as string,
+    address: formData.get("address") as string,
     aadhar_name: formData.get("aadharName") as string,
     aadhar_number: formData.get("aadharNumber") as string,
     date_of_birth: formData.get("dob") as string,
@@ -67,13 +69,8 @@ export async function createStudent(formData: FormData) {
       if (!user?.user) {
         return { error: "Unauthorized. Please log in." };
       }
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('academy_id')
-        .eq('id', user.user.id)
-        .single();
-
-      academyId = profile?.academy_id ?? null;
+      academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+      if (!academyId) return { error: "No academy found." };
     }
 
     // Generate sequential admission number
@@ -86,6 +83,7 @@ export async function createStudent(formData: FormData) {
       mobile_number: data.mobile_number,
       whatsapp_number: data.whatsapp_number,
       parent_name: data.parent_name,
+      address: data.address || null,
       aadhar_name: data.aadhar_name || null,
       aadhar_number: data.aadhar_number || null,
       date_of_birth: data.date_of_birth || null,
@@ -111,10 +109,10 @@ export async function fetchStudentDetails(admissionNumber: string) {
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return null;
 
-  const { data: profile } = await supabase.from('profiles').select('academy_id').eq('id', user.user.id).single();
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
 
   const query = supabase.from('students').select('*').eq('admission_number', admissionNumber);
-  if (profile?.academy_id) query.eq('academy_id', profile.academy_id);
+  if (academyId) query.eq('academy_id', academyId);
 
   const { data, error } = await query.single();
   if (error || !data) return null;
@@ -155,6 +153,7 @@ export async function fetchStudentDetails(admissionNumber: string) {
       whatsapp: data.whatsapp_number || undefined,
       email: data.email || 'N/A',
     },
+    address: data.address || 'N/A',
     aadhar: {
       name: data.aadhar_name || 'N/A',
       number: data.aadhar_number || 'N/A',
@@ -201,13 +200,13 @@ export async function fetchAlumni() {
 
   if (!user?.user) return [];
 
-  const { data: profile } = await supabase.from('profiles').select('academy_id').eq('id', user.user.id).single();
-  if (!profile?.academy_id) return [];
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return [];
 
   const { data } = await supabase
     .from('students')
     .select('admission_number, full_name, join_date, dance_style, status')
-    .eq('academy_id', profile.academy_id)
+    .eq('academy_id', academyId)
     .in('status', ['inactive', 'alumni'])
     .order('join_date', { ascending: false });
 
@@ -224,6 +223,8 @@ export async function updateStudent(admissionNumber: string, formData: FormData)
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return { error: "Unauthorized." };
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy found." };
 
   // Ensure administrator profile row exists in PostgreSQL
   await ensureAdminProfileExists();
@@ -233,6 +234,7 @@ export async function updateStudent(admissionNumber: string, formData: FormData)
     mobile_number: formData.get("mobileNumber") as string,
     whatsapp_number: formData.get("whatsappNumber") as string || null,
     parent_name:   formData.get("parentName") as string,
+    address:       formData.get("address") as string || null,
     aadhar_name:   formData.get("aadharName") as string || null,
     aadhar_number: formData.get("aadharNumber") as string || null,
     date_of_birth: formData.get("dob") as string || null,
@@ -251,7 +253,8 @@ export async function updateStudent(admissionNumber: string, formData: FormData)
   const { error } = await supabase
     .from('students')
     .update(updates)
-    .eq('admission_number', admissionNumber);
+    .eq('admission_number', admissionNumber)
+    .eq('academy_id', academyId);
 
   if (error) return { error: error.message };
 
@@ -266,16 +269,22 @@ export async function addProgressNote(studentId: string, note: string) {
   if (!user?.user) return { error: "Unauthorized." };
 
   // Resolve student DB id from admission number
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy found." };
+
   const { data: student } = await supabase
     .from('students')
     .select('id')
     .eq('admission_number', studentId)
+    .eq('academy_id', academyId)
     .single();
 
   if (!student) return { error: "Student not found." };
 
   const { error } = await supabase.from('student_progress').insert({
+    academy_id: academyId,
     student_id: student.id,
+    noted_by: user.user.id,
     note,
   });
 
@@ -289,11 +298,14 @@ export async function restoreStudent(admissionNumber: string) {
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return { error: "Unauthorized." };
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy found." };
 
   const { error } = await supabase
     .from('students')
     .update({ status: 'active' })
-    .eq('admission_number', admissionNumber);
+    .eq('admission_number', admissionNumber)
+    .eq('academy_id', academyId);
 
   if (error) return { error: error.message };
 
@@ -309,11 +321,14 @@ export async function deleteStudent(id: string) {
   if (!user?.user) return { error: "Unauthorized." };
 
   await ensureAdminProfileExists();
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy found." };
 
   const { error } = await supabase
     .from('students')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .eq('academy_id', academyId);
 
   if (error) return { error: error.message };
 
