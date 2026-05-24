@@ -65,6 +65,8 @@ CREATE TABLE students (
     whatsapp_number VARCHAR(20),
     email VARCHAR(255),
     address TEXT,
+    aadhar_name VARCHAR(255),
+    aadhar_number VARCHAR(12),
     date_of_birth DATE,
     gender VARCHAR(20),
     join_date DATE DEFAULT CURRENT_DATE,

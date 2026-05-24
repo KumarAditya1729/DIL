@@ -179,6 +179,37 @@ export default function ParentRegistrationPage() {
             </div>
           </div>
 
+          {/* Section 3: Aadhar Card Details */}
+          <div className="pt-4 border-t border-white/5 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-amber-300">Aadhar Card Details</h3>
+              <p className="text-xs text-slate-400 mt-1">Under 18: enter parent Aadhar details. 18+: enter student Aadhar details.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-400">Aadhar Card Holder Name</label>
+                <input
+                  name="aadharName"
+                  type="text"
+                  placeholder="Name as per Aadhar card"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white outline-none transition-colors text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-400">Aadhar Card Number</label>
+                <input
+                  name="aadharNumber"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]{12}"
+                  maxLength={12}
+                  placeholder="12 digit Aadhar number"
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white outline-none transition-colors text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Section 3: Course & Class Preferences */}
           <div className="pt-4 border-t border-white/5 space-y-4">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-purple-400">Course Preferences</h3>

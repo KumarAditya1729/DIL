@@ -144,6 +144,24 @@ export default function NewAdmissionPage() {
             </div>
           </div>
 
+          {/* Aadhar Card Details */}
+          <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Aadhar Card Details</h3>
+              <p className="text-xs text-slate-500 mt-1">Under 18: enter parent Aadhar details. 18+: enter student Aadhar details.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Aadhar Card Holder Name</label>
+                <input name="aadharName" type="text" placeholder="Name as per Aadhar card" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none text-sm dark:text-slate-200" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Aadhar Card Number</label>
+                <input name="aadharNumber" type="text" inputMode="numeric" pattern="[0-9]{12}" maxLength={12} placeholder="12 digit Aadhar number" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none text-sm dark:text-slate-200" />
+              </div>
+            </div>
+          </div>
+
           {/* Academy Details */}
           <div className="pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
