@@ -49,7 +49,7 @@ export default function NewAdmissionPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">New Admission</h1>
-          <p className="text-slate-500 text-sm mt-1">Register a new student to the academy.</p>
+          <p className="text-slate-500 text-sm mt-1">Admission Portal</p>
         </div>
       </div>
 
@@ -71,6 +71,19 @@ export default function NewAdmissionPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-primary-100 dark:border-primary-800/30 bg-primary-50 dark:bg-primary-900/20 p-4">
+              <p className="text-sm font-semibold text-primary-800 dark:text-primary-200">Payment Modes</p>
+              <p className="text-sm text-primary-700 dark:text-primary-300 mt-1">Cash, UPI, Cheque, Card Pay</p>
+            </div>
+            <div className="rounded-xl border border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-900/10 p-4">
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-300">Admission Notes</p>
+              <p className="text-sm text-amber-800 dark:text-amber-400 mt-1">Security Money: ₹1000. It will be refunded after 6 months.</p>
+              <p className="text-xs text-amber-700 dark:text-amber-500 mt-2">Note: Deposited money will not be refunded after payment.</p>
+              <p className="text-xs text-amber-700 dark:text-amber-500 mt-1">Under 18: Parents Aadhar. 18+: Student Aadhar.</p>
+            </div>
+          </div>
+
           {/* Photo Upload */}
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
@@ -134,9 +147,9 @@ export default function NewAdmissionPage() {
           {/* Academy Details */}
           <div className="pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Dance Style</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Courses</label>
               <select name="danceStyle" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-primary-500 outline-none text-sm dark:text-slate-200">
-                <option value="">Select Style</option>
+                <option value="">Select Course</option>
                 <option>Hip Hop</option>
                 <option>Classical / Kathak</option>
                 <option>Bollywood</option>

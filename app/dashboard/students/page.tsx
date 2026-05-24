@@ -164,7 +164,7 @@ export default function StudentsPage() {
                   <th className="px-6 py-4 font-medium">Admission No.</th>
                   <th className="px-6 py-4 font-medium">Student</th>
                   <th className="px-6 py-4 font-medium">Mobile</th>
-                  <th className="px-6 py-4 font-medium">Batch / Style</th>
+                  <th className="px-6 py-4 font-medium">Batch / Course</th>
                   <th className="px-6 py-4 font-medium">Status</th>
                   <th className="px-6 py-4 font-medium text-right">Actions</th>
                 </tr>

@@ -181,7 +181,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                 <p className="font-medium text-slate-900 dark:text-slate-200">{student.gender}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Dance Styles</p>
+                <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Courses</p>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {student.styles.map((style, i) => <span key={i} className="px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">{style}</span>)}
                 </div>
@@ -376,9 +376,9 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Dance Style</label>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Courses</label>
                   <select name="danceStyle" defaultValue={student.styles[0] || ''} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white">
-                    <option value="">Select Style</option>
+                    <option value="">Select Course</option>
                     <option>Hip Hop</option><option>Classical / Kathak</option><option>Bollywood</option><option>Contemporary</option><option>Freestyle</option>
                   </select>
                 </div>
