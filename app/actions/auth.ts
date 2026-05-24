@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -55,20 +56,46 @@ export async function ensureAdminProfileExists() {
     email.includes("kumaraditya") ||
     email === "arkashrios@gmail.com";
 
-  if (isAdmin) {
-    const { data: academy } = await supabase.from('academies').select('id').limit(1).maybeSingle();
-    if (academy?.id) {
-      const { data: profile } = await supabase.from('profiles').select('id').eq('id', user.user.id).maybeSingle();
-      if (!profile) {
-        await supabase.from('profiles').insert({
-          id: user.user.id,
-          academy_id: academy.id,
-          full_name: user.user.email?.split('@')[0] || 'Admin',
-          role: 'super_admin'
-        });
-      }
+  if (!isAdmin) return null;
+
+  const { data: academy } = await supabase
+    .from("academies")
+    .select("id")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  const profilePayload = {
+    full_name: user.user.email?.split("@")[0] || "Admin",
+    role: "super_admin",
+    ...(academy?.id ? { academy_id: academy.id } : {}),
+  };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", user.user.id)
+    .maybeSingle();
+
+  if (!profile) {
+    const { error } = await supabase.from("profiles").insert({
+      id: user.user.id,
+      ...profilePayload,
+    });
+    if (error) {
+      await createAdminClient()?.from("profiles").upsert({
+        id: user.user.id,
+        ...profilePayload,
+      });
     }
+    return null;
   }
+
+  const { error } = await supabase.from("profiles").update(profilePayload).eq("id", user.user.id);
+  if (error) {
+    await createAdminClient()?.from("profiles").update(profilePayload).eq("id", user.user.id);
+  }
+  return null;
 }
 
 export async function getUserRole() {
