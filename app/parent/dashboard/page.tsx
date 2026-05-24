@@ -84,7 +84,7 @@ export default function ParentDashboard() {
               {child.admission_number || "Admission ID N/A"}
             </span>
             <span className="text-xs text-slate-300 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
-              {child.dance_style || "Style N/A"}
+              {child.dance_style || "Course N/A"}
             </span>
             <span className="text-xs text-slate-300 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
               {child.batch || "Batch N/A"}

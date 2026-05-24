@@ -244,7 +244,7 @@ export default function BatchesPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Dance Style <span className="text-red-500">*</span></label>
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Courses <span className="text-red-500">*</span></label>
                       <input name="style" required defaultValue={editingBatch?.style} placeholder="e.g. Hip Hop" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white" />
                     </div>
                     <div className="space-y-1.5">

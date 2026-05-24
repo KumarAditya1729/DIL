@@ -66,9 +66,9 @@ export default function ParentRegistrationPage() {
     <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in duration-500">
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <UserPlus className="w-6 h-6 text-primary-400" /> Student Registration
+          <UserPlus className="w-6 h-6 text-primary-400" /> Admission Portal
         </h1>
-        <p className="text-slate-400 text-sm mt-1">Enroll your child directly into DIL Academy classes.</p>
+        <p className="text-slate-400 text-sm mt-1">Enroll directly into DIL Academy courses.</p>
       </div>
 
       <div className="bg-white/5 border border-white/10 rounded-3xl shadow-2xl p-6 md:p-8 space-y-6">
@@ -83,6 +83,19 @@ export default function ParentRegistrationPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-primary-500/20 bg-primary-500/10 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary-300">Payment Modes</p>
+              <p className="text-sm text-slate-200 mt-1">Cash, UPI, Cheque, Card Pay</p>
+            </div>
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-amber-300">Admission Notes</p>
+              <p className="text-sm text-slate-200 mt-1">Security Money: ₹1000. It will be refunded after 6 months.</p>
+              <p className="text-xs text-slate-400 mt-2">Note: Deposited money will not be refunded after payment.</p>
+              <p className="text-xs text-slate-400 mt-1">Under 18: Parents Aadhar. 18+: Student Aadhar.</p>
+            </div>
+          </div>
+
           {/* Section 1: Child Personal Details */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-primary-400">Child Details</h3>
@@ -166,17 +179,17 @@ export default function ParentRegistrationPage() {
             </div>
           </div>
 
-          {/* Section 3: Dance & Class Preferences */}
+          {/* Section 3: Course & Class Preferences */}
           <div className="pt-4 border-t border-white/5 space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-purple-400">Dance Class Preferences</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-purple-400">Course Preferences</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-400">Dance Style Preference</label>
+                <label className="text-xs font-semibold text-slate-400">Course Preference</label>
                 <select
                   name="danceStyle"
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white outline-none transition-colors text-sm"
                 >
-                  <option value="" className="bg-slate-900 text-slate-300">Select Style</option>
+                  <option value="" className="bg-slate-900 text-slate-300">Select Course</option>
                   <option className="bg-slate-900 text-white">Hip Hop</option>
                   <option className="bg-slate-900 text-white">Classical / Kathak</option>
                   <option className="bg-slate-900 text-white">Bollywood</option>
