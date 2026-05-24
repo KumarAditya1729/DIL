@@ -2,17 +2,15 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { resolveCurrentAcademyId } from "./academy";
 
 export async function createInvoice(formData: FormData) {
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return { error: "Unauthorized." };
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("academy_id")
-    .eq("id", user.user.id)
-    .single();
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy found." };
 
   const studentAdmNo = formData.get("studentId") as string;
   const amount       = parseFloat(formData.get("amount") as string);
@@ -29,6 +27,7 @@ export async function createInvoice(formData: FormData) {
     .from("students")
     .select("id")
     .eq("admission_number", studentAdmNo)
+    .eq("academy_id", academyId)
     .single();
 
   if (!student) return { error: "Student not found. Check the admission number." };
@@ -51,10 +50,11 @@ export async function createInvoice(formData: FormData) {
   const { error } = await supabase.from("invoices").insert({
     invoice_number: invoiceNumber,
     student_id:     student.id,
-    academy_id:     profile?.academy_id ?? null,
+    academy_id:     academyId,
     amount,
     description,
     month,
+    year:           now.getFullYear(),
     due_date:       dueDate || null,
     status:         "pending",
   });
@@ -69,11 +69,14 @@ export async function markInvoicePaid(invoiceId: string) {
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return { error: "Unauthorized." };
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy found." };
 
   const { error } = await supabase
     .from("invoices")
     .update({ status: "paid", paid_at: new Date().toISOString() })
-    .eq("invoice_number", invoiceId);
+    .eq("invoice_number", invoiceId)
+    .eq("academy_id", academyId);
 
   if (error) return { error: error.message };
   revalidatePath("/dashboard/fees");

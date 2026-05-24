@@ -2,17 +2,18 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { resolveCurrentAcademyId } from "./academy";
 
 export async function fetchBroadcasts() {
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return [];
-  const { data: profile } = await supabase.from('profiles').select('academy_id').eq('id', user.user.id).single();
-  if (!profile?.academy_id) return [];
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return [];
 
   const { data } = await supabase.from('notifications')
     .select('*')
-    .eq('academy_id', profile.academy_id)
+    .eq('academy_id', academyId)
     .order('created_at', { ascending: false });
   return data || [];
 }
@@ -21,11 +22,11 @@ export async function createBroadcast(formData: FormData) {
   const supabase = createClient();
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return { error: "Unauthorized" };
-  const { data: profile } = await supabase.from('profiles').select('academy_id').eq('id', user.user.id).single();
-  if (!profile?.academy_id) return { error: "No academy found" };
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy found" };
 
   const insert = {
-    academy_id: profile.academy_id,
+    academy_id: academyId,
     user_id: user.user.id,
     title: formData.get("audience") as string,
     message: formData.get("message") as string,
@@ -43,12 +44,12 @@ export async function fetchLiveNotifications() {
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return [];
 
-  const { data: profile } = await supabase.from('profiles').select('academy_id').eq('id', user.user.id).single();
-  if (!profile?.academy_id) return [];
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return [];
 
   const { data } = await supabase.from('notifications')
     .select('*')
-    .eq('academy_id', profile.academy_id)
+    .eq('academy_id', academyId)
     .order('created_at', { ascending: false })
     .limit(20);
 
@@ -57,7 +58,12 @@ export async function fetchLiveNotifications() {
 
 export async function markNotificationAsRead(id: string) {
   const supabase = createClient();
-  const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+  const { data: user } = await supabase.auth.getUser();
+  if (!user?.user) return { error: "Unauthorized" };
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy" };
+
+  const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', id).eq('academy_id', academyId);
   if (error) return { error: error.message };
   return { success: true };
 }
@@ -67,10 +73,10 @@ export async function markAllNotificationsAsRead() {
   const { data: user } = await supabase.auth.getUser();
   if (!user?.user) return { error: "Unauthorized" };
 
-  const { data: profile } = await supabase.from('profiles').select('academy_id').eq('id', user.user.id).single();
-  if (!profile?.academy_id) return { error: "No academy" };
+  const academyId = await resolveCurrentAcademyId(supabase, user.user.id);
+  if (!academyId) return { error: "No academy" };
 
-  const { error } = await supabase.from('notifications').update({ is_read: true }).eq('academy_id', profile.academy_id).eq('is_read', false);
+  const { error } = await supabase.from('notifications').update({ is_read: true }).eq('academy_id', academyId).eq('is_read', false);
   if (error) return { error: error.message };
   return { success: true };
 }

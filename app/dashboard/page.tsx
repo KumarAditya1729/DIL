@@ -23,7 +23,10 @@ export default async function Dashboard() {
     supabase.from("students").select("full_name, status, join_date, admission_number").order("created_at", { ascending: false }).limit(5),
     supabase.from("invoices").select("amount, status"),
     supabase.from("students").select("full_name, date_of_birth, admission_number").eq("status", "active"),
-    supabase.from("attendance_records").select("present").eq("date", new Date().toISOString().split("T")[0]),
+    supabase
+      .from("attendance_records")
+      .select("status, attendance!inner(date)")
+      .eq("attendance.date", new Date().toISOString().split("T")[0]),
     supabase.from("batches").select("*").limit(3),
   ]);
 
@@ -35,7 +38,7 @@ export default async function Dashboard() {
   });
 
   // Today's attendance
-  const presentToday = (attendanceToday || []).filter(r => r.present).length;
+  const presentToday = (attendanceToday || []).filter(r => r.status === "present").length;
   const totalMarkedToday = (attendanceToday || []).length;
 
   // Birthday reminders — students with birthday in next 7 days
