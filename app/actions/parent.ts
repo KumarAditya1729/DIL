@@ -116,14 +116,7 @@ export async function createRazorpayOrder(invoiceId: string, amount: number) {
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
   if (!keyId || !keySecret) {
-    // Sandbox Mock Mode fallback
-    console.warn("Razorpay API keys not found in environment. Running in Mock Sandbox mode.");
-    return {
-      id: `mock_order_${Math.random().toString(36).substring(7)}`,
-      amount: Math.round(amount * 100),
-      currency: "INR",
-      isMock: true
-    };
+    throw new Error("Razorpay API keys not configured. Cannot process payment in production.");
   }
 
   try {
@@ -154,12 +147,7 @@ export async function createRazorpayOrder(invoiceId: string, amount: number) {
     };
   } catch (err: any) {
     console.error("Razorpay order creation failed:", err);
-    return {
-      id: `mock_order_failed_${Date.now()}`,
-      amount: Math.round(amount * 100),
-      currency: "INR",
-      isMock: true
-    };
+    throw new Error(err.message || "Failed to create Razorpay order");
   }
 }
 

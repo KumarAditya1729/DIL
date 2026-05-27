@@ -71,87 +71,96 @@ export default function ParentDashboard() {
   const totalPending = pendingInvoices.reduce((sum, i) => sum + parseFloat(i.amount || "0"), 0);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Child Profile Card */}
-      <div className="bg-gradient-to-br from-primary-900/60 to-pink-900/40 border border-primary-500/20 rounded-3xl p-6 flex gap-5 items-center">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-xl shadow-purple-900/40">
-          <GraduationCap className="w-8 h-8 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-white">{child.full_name}</h1>
-          <div className="flex flex-wrap gap-3 mt-2">
-            <span className="text-xs text-primary-300 bg-primary-500/10 border border-primary-500/20 px-3 py-1 rounded-full font-medium">
-              {child.admission_number || "Admission ID N/A"}
-            </span>
-            <span className="text-xs text-slate-300 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
-              {child.dance_style || "Course N/A"}
-            </span>
-            <span className="text-xs text-slate-300 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
-              {child.batch || "Batch N/A"}
-            </span>
-            <span className={`text-xs px-3 py-1 rounded-full font-medium ${child.status === "active" ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-orange-500/10 text-orange-400 border border-orange-500/20"}`}>
+    <div className="px-6 py-4 space-y-8 pb-20 animate-in fade-in duration-500 bg-white min-h-full">
+      {/* Welcome Header */}
+      <div className="mt-2">
+        <p className="text-slate-400 text-sm font-medium">Welcome back,</p>
+        <h2 className="text-2xl font-black text-slate-800">
+          Your Child&apos;s <span className="text-[#FF2A55]">Progress</span>
+        </h2>
+      </div>
+
+      {/* Main Class/Course Card (Mimicking Dribbble Image) */}
+      <div className="relative group perspective">
+        <div className="w-full rounded-[2.5rem] bg-gradient-to-b from-white to-pink-50 border-[6px] border-slate-900 shadow-2xl p-6 flex flex-col items-center justify-between min-h-[360px] relative overflow-hidden transition-transform duration-500 group-hover:scale-[1.02]">
+          {/* Top Info */}
+          <div className="w-full flex justify-between items-start z-10">
+            <span className="bg-slate-900 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
               {child.status || "Active"}
             </span>
+            <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center">
+              <GraduationCap className="w-4 h-4 text-[#FF2A55]" />
+            </div>
           </div>
+
+          {/* Center Graphic/Typography */}
+          <div className="flex flex-col items-center justify-center flex-1 z-10 mt-4 mb-6">
+            <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-[#FF2A55] to-[#FF4B72] flex items-center justify-center shadow-xl shadow-pink-500/40 mb-6">
+              <h1 className="text-white font-black text-3xl italic tracking-tighter mix-blend-overlay">Dance<br/>Tuts</h1>
+            </div>
+            <h3 className="font-extrabold text-2xl text-slate-800 text-center leading-tight">
+              {child.dance_style || "Dance Class"}
+            </h3>
+            <p className="text-slate-500 text-sm font-medium mt-2 text-center max-w-[80%]">
+              {child.batch || "General Batch"} • {child.full_name}
+            </p>
+          </div>
+
+          {/* Bottom Button */}
+          <div className="w-full z-10">
+            <Link href="/parent/dashboard/attendance" className="w-full py-4 bg-gradient-to-r from-[#FF2A55] to-[#FF4B72] text-white rounded-3xl font-bold shadow-lg shadow-pink-500/30 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+              View Attendance <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Decorative background circles */}
+          <div className="absolute top-[-20%] left-[-20%] w-64 h-64 bg-pink-200/50 rounded-full blur-3xl" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-48 h-48 bg-pink-300/40 rounded-full blur-2xl" />
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-          <CalendarCheck className="w-5 h-5 text-green-400 mb-3" />
-          <p className="text-3xl font-bold text-white">{attendancePct}%</p>
-          <p className="text-xs text-slate-500 mt-1">Attendance Rate</p>
-          <p className="text-xs text-slate-600 mt-0.5">{presentCount}/{attendance.length} classes</p>
-        </div>
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-          <CreditCard className="w-5 h-5 text-orange-400 mb-3" />
-          <p className="text-3xl font-bold text-white">₹{totalPending.toLocaleString()}</p>
-          <p className="text-xs text-slate-500 mt-1">Pending Fees</p>
-          <p className="text-xs text-slate-600 mt-0.5">{pendingInvoices.length} invoice(s)</p>
-        </div>
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 col-span-2 sm:col-span-1">
-          <TrendingUp className="w-5 h-5 text-primary-400 mb-3" />
-          <p className="text-3xl font-bold text-white">{invoices.filter(i => i.status === "paid").length}</p>
-          <p className="text-xs text-slate-500 mt-1">Fees Paid</p>
-          <p className="text-xs text-slate-600 mt-0.5">Total installments</p>
-        </div>
+      {/* Quick Stats Row */}
+      <div className="grid grid-cols-2 gap-4">
+        <Link href="/parent/dashboard/attendance" className="bg-slate-50 rounded-3xl p-5 border border-slate-100 flex flex-col items-center justify-center text-center hover:bg-pink-50 transition-colors">
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3">
+            <CalendarCheck className="w-5 h-5 text-green-500" />
+          </div>
+          <p className="text-2xl font-black text-slate-800">{attendancePct}%</p>
+          <p className="text-xs text-slate-400 font-bold mt-1">Attendance</p>
+        </Link>
+        <Link href="/parent/dashboard/fees" className={`rounded-3xl p-5 border flex flex-col items-center justify-center text-center transition-colors ${totalPending > 0 ? "bg-orange-50 border-orange-100 hover:bg-orange-100" : "bg-slate-50 border-slate-100 hover:bg-pink-50"}`}>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${totalPending > 0 ? "bg-orange-200 text-orange-600" : "bg-slate-200 text-slate-500"}`}>
+            <CreditCard className="w-5 h-5" />
+          </div>
+          <p className={`text-2xl font-black ${totalPending > 0 ? "text-orange-600" : "text-slate-800"}`}>₹{totalPending.toLocaleString()}</p>
+          <p className="text-xs text-slate-400 font-bold mt-1">Pending Fees</p>
+        </Link>
       </div>
 
-      {/* Pending Fee Alert */}
-      {totalPending > 0 && (
-        <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-5 flex items-start gap-4">
-          <AlertCircle className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
-          <div className="flex-1">
-            <p className="text-orange-300 font-semibold text-sm">Outstanding Fee Due</p>
-            <p className="text-slate-400 text-xs mt-1">You have ₹{totalPending.toLocaleString()} in pending fee(s). Pay online now to avoid late charges.</p>
-          </div>
-          <Link href="/parent/dashboard/fees" className="px-4 py-2 bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold rounded-xl transition-colors flex-shrink-0">
-            Pay Now
-          </Link>
-        </div>
-      )}
-
-      {/* Recent Attendance */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+      {/* Recent Activity List */}
+      <div className="pt-2">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="font-bold text-white flex items-center gap-2"><Clock className="w-4 h-4 text-primary-400" /> Recent Attendance</h2>
-          <Link href="/parent/dashboard/attendance" className="text-xs text-primary-400 hover:text-primary-300">View All →</Link>
+          <h4 className="font-bold text-slate-800">Recent Activity</h4>
+          <Link href="/parent/dashboard/attendance" className="text-xs font-bold text-[#FF2A55] uppercase tracking-wider">See All</Link>
         </div>
-        {attendance.length === 0 ? (
-          <p className="text-slate-500 text-sm text-center py-6">No attendance records found.</p>
-        ) : (
-          <div className="space-y-2">
-            {attendance.slice(0, 6).map((a, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-                <span className="text-sm text-slate-400">{a.date ? new Date(a.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "N/A"}</span>
-                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${a.present ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
-                  {a.present ? "✓ Present" : "✗ Absent"}
-                </span>
+        <div className="space-y-3">
+          {attendance.slice(0, 3).map((a, i) => (
+            <div key={i} className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${a.present ? 'bg-green-100' : 'bg-red-100'}`}>
+                  <Clock className={`w-4 h-4 ${a.present ? 'text-green-500' : 'text-red-500'}`} />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-700 text-sm">Class Session</p>
+                  <p className="text-xs text-slate-400 font-medium">{a.date ? new Date(a.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "N/A"}</p>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+              <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${a.present ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+                {a.present ? "Present" : "Absent"}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
