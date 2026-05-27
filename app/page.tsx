@@ -17,7 +17,7 @@ export default function LandingPage() {
               Parent Portal
             </Link>
             <Link href="/login" className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-medium shadow-sm transition-all flex items-center gap-1.5">
-              Staff Login <ArrowRight className="w-3.5 h-3.5" />
+              Admin Login <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function LandingPage() {
               <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full blur-xl pointer-events-none"></div>
               <div>
                 <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary-100 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400 mb-4">
-                  For Staff
+                  For Admin
                 </span>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">Admin & Teachers</h3>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 leading-relaxed">Manage new registrations, attendance registers, collect fees, and dispatch announcements.</p>
@@ -85,7 +85,7 @@ export default function LandingPage() {
               { icon: Smartphone, title: "Student Management", desc: "Manage admissions, profiles, batch assignments, and student records in seconds." },
               { icon: CreditCard, title: "Fee Collection", desc: "Record payments, generate PDF receipts, and send WhatsApp confirmations instantly." },
               { icon: CalendarCheck, title: "Attendance Tracking", desc: "Mark daily batch attendance with one click. View trends over time." },
-              { icon: Shield, title: "Secure & Private", desc: "Your academy data is private and protected. Staff-only access with secure login." },
+              { icon: Shield, title: "Secure & Private", desc: "Your academy data is private and protected. Admin-only access with secure login." },
               { icon: BarChart, title: "Reports & Analytics", desc: "View revenue trends, attendance rates, and performance metrics at a glance." },
               { icon: Zap, title: "Events & Showcases", desc: "Plan performances, workshops, and competitions. Track participants and venues." },
             ].map((feat, i) => (

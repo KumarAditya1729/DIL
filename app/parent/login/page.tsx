@@ -153,7 +153,7 @@ export default function ParentLoginPage() {
           </p>
 
           <p className="text-center text-slate-600 text-xs mt-4">
-            Academy staff?{" "}
+            Academy Admin?{" "}
             <a href="/login" className="text-primary-400 hover:text-primary-300 transition-colors">
               Admin Login →
             </a>
