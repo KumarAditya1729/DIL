@@ -8,7 +8,7 @@ export function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
   const { theme, setTheme } = useTheme();
 
   return (
-    <header className="h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300">
+    <header className="h-16 bg-white/60 dark:bg-slate-950/40 backdrop-blur-2xl border-b border-slate-200/50 dark:border-white/5 sticky top-0 z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300">
       <div className="flex items-center gap-4">
         <button 
           onClick={onMenuClick}

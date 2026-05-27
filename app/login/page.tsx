@@ -12,7 +12,7 @@ function SubmitButton() {
     <button 
       disabled={pending}
       type="submit" 
-      className="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-sm transition-all flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed group"
+      className="w-full py-3.5 px-4 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white rounded-2xl font-semibold shadow-lg shadow-primary-500/30 transition-all flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed group"
     >
       {pending ? <Loader2 className="w-5 h-5 animate-spin" /> : (
         <span className="flex items-center gap-2">Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
@@ -41,7 +41,7 @@ export default function LoginPage() {
           <p className="text-slate-500 mt-2">Sign in to your academy dashboard</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-8">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-[0_0_40px_rgba(0,0,0,0.3)] border border-slate-200/50 dark:border-white/5 p-8">
           <form action={dispatch} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Email Address</label>
@@ -52,7 +52,7 @@ export default function LoginPage() {
                   name="email"
                   required
                   placeholder="admin@academy.com" 
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all dark:text-white"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200/50 dark:border-white/10 bg-white/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all dark:text-white backdrop-blur-sm"
                 />
               </div>
             </div>
@@ -69,7 +69,7 @@ export default function LoginPage() {
                   name="password"
                   required
                   placeholder="••••••••" 
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all dark:text-white"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200/50 dark:border-white/10 bg-white/50 dark:bg-slate-950/50 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all dark:text-white backdrop-blur-sm"
                 />
               </div>
             </div>

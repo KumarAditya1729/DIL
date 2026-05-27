@@ -119,7 +119,7 @@ export default async function Dashboard() {
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <Link key={i} href={stat.href} className={`bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm rounded-2xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group relative overflow-hidden`}>
+            <Link key={i} href={stat.href} className={`bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 shadow-lg rounded-3xl p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden`}>
               <div className={`absolute top-0 right-0 w-28 h-28 ${stat.color} opacity-5 rounded-full blur-2xl -mr-8 -mt-8 group-hover:opacity-15 transition-opacity duration-500`} />
               <div className="flex justify-between items-start relative z-10">
                 <div className="space-y-2">
@@ -140,7 +140,7 @@ export default async function Dashboard() {
 
       {/* Today's Quick Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 shadow-md rounded-3xl p-5 flex items-center gap-4 hover:-translate-y-1 transition-all duration-300">
           <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
             <CheckCircle2 className="w-5 h-5 text-green-500" />
           </div>
@@ -149,7 +149,7 @@ export default async function Dashboard() {
             <p className="text-xs text-slate-500 mt-0.5">Present today</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 shadow-md rounded-3xl p-5 flex items-center gap-4 hover:-translate-y-1 transition-all duration-300">
           <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
             <BarChart2 className="w-5 h-5 text-primary-500" />
           </div>
@@ -160,7 +160,7 @@ export default async function Dashboard() {
             <p className="text-xs text-slate-500 mt-0.5">Today&apos;s attendance rate</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 shadow-md rounded-3xl p-5 flex items-center gap-4 hover:-translate-y-1 transition-all duration-300">
           <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
             <Bell className="w-5 h-5 text-orange-500" />
           </div>
@@ -175,7 +175,7 @@ export default async function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Admissions */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm rounded-2xl p-6">
+        <div className="lg:col-span-2 bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 shadow-xl rounded-3xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">Recent Admissions</h2>
             <Link href="/dashboard/students" className="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1">
@@ -216,7 +216,7 @@ export default async function Dashboard() {
         </div>
 
         {/* Today's Schedule */}
-        <div className="bg-gradient-to-br from-primary-600 to-primary-900 rounded-2xl p-6 text-white shadow-xl shadow-primary-900/20 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-3xl p-6 text-white shadow-2xl shadow-primary-500/30 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4">
             <Calendar className="w-28 h-28" />
           </div>

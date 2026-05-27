@@ -64,11 +64,11 @@ export function Sidebar({
 
       {/* Sidebar Content */}
       <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 
-        z-50 transition-all duration-300 flex flex-col shadow-2xl lg:shadow-none
+        fixed top-0 left-0 h-full w-64 bg-white/60 dark:bg-slate-950/40 backdrop-blur-3xl border-r border-slate-200/50 dark:border-white/5 
+        z-50 transition-all duration-300 flex flex-col shadow-2xl lg:shadow-[4px_0_24px_rgba(0,0,0,0.02)] dark:lg:shadow-[4px_0_24px_rgba(0,0,0,0.2)]
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200/50 dark:border-white/5 bg-white/20 dark:bg-slate-950/20">
           <div className="flex items-center gap-2 font-bold italic text-xl text-primary-600 dark:text-primary-500">
             <Image src="/logo.png" alt="DIL Logo" width={32} height={32} className="object-contain drop-shadow-sm" />
             <span>DIL Academy</span>
