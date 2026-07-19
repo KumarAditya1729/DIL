@@ -1,4 +1,4 @@
-import { Download, TrendingUp, Users, CalendarCheck, IndianRupee, AlertCircle } from "lucide-react";
+import { Download, TrendingUp, Users, CalendarCheck, IndianRupee, AlertCircle, ArrowUpRight, BarChart2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { RevenueBarChart } from "@/components/charts/RevenueBarChart";
 import { AttendancePieChart } from "@/components/charts/AttendancePieChart";
@@ -62,112 +62,155 @@ export default async function ReportsPage() {
 
   // ─── Attendance Breakdown ─────────────────────────────────
   const attendanceData = [
-    { label: "Present", value: presentCount, color: "#22c55e" },
-    { label: "Absent",  value: totalMarked - presentCount, color: "#f87171" },
+    { label: "Present", value: presentCount, color: "#171717" }, // Using foreground color
+    { label: "Absent",  value: totalMarked - presentCount, color: "#e5e5e5" }, // Using border color
   ];
 
   const stats = [
-    { label: "Total Students",  value: String(totalStudents || 0),                               icon: Users,         color: "bg-blue-50 dark:bg-blue-900/20 text-blue-600",    trend: null },
-    { label: "Active Enrolments", value: String(activeStudents || 0),                            icon: CalendarCheck, color: "bg-green-50 dark:bg-green-900/20 text-green-600",  trend: null },
-    { label: "Total Revenue",   value: `₹${totalRevenue.toLocaleString("en-IN")}`,               icon: IndianRupee,   color: "bg-purple-50 dark:bg-purple-900/20 text-purple-600", trend: null },
-    { label: "Pending Dues",    value: `₹${pendingDues.toLocaleString("en-IN")}`,                icon: AlertCircle,   color: "bg-orange-50 dark:bg-orange-900/20 text-orange-600", trend: null },
+    { label: "Total Students",  value: String(totalStudents || 0),                               icon: Users,         color: "text-[var(--foreground)]", bg: "bg-[var(--foreground)]/5" },
+    { label: "Active Enrolments", value: String(activeStudents || 0),                            icon: CalendarCheck, color: "text-[var(--foreground)]", bg: "bg-[var(--foreground)]/5" },
+    { label: "Total Revenue",   value: `₹${totalRevenue.toLocaleString("en-IN")}`,               icon: IndianRupee,   color: "text-green-600 dark:text-green-400", bg: "bg-green-500/10" },
+    { label: "Pending Dues",    value: `₹${pendingDues.toLocaleString("en-IN")}`,                icon: AlertCircle,   color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10" },
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+      
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Reports &amp; Analytics</h1>
-          <p className="text-slate-500 text-sm mt-1">Academy performance overview and financial summary.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)]">Analytics & Reports</h1>
+          <p className="text-[var(--muted)] text-sm mt-1">Key metrics and performance overview.</p>
         </div>
         <a
           href={`/api/reports/export`}
-          className="px-4 py-2 bg-white border border-slate-200 dark:border-slate-700 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl font-medium shadow-sm transition-all text-sm flex items-center justify-center gap-2 self-start"
+          className="px-4 py-2 bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 text-[var(--background)] rounded-full font-semibold shadow-sm transition-all text-sm flex items-center gap-2"
         >
-          <Download className="w-4 h-4" /> Export CSV
+          <Download className="w-4 h-4" /> Export Data
         </a>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {stats.map((stat) => {
+      {/* Primary KPI Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.label} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${stat.color}`}>
-                <Icon className="w-5 h-5" />
+            <div key={stat.label} className="bg-[var(--card-bg)] p-6 rounded-[24px] border border-[var(--border-color)] shadow-sm flex flex-col justify-between group">
+              <div className="flex items-center justify-between mb-8">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${stat.bg}`}>
+                  <Icon className={`w-5 h-5 ${stat.color}`} />
+                </div>
+                <ArrowUpRight className="w-5 h-5 text-[var(--border-color)] group-hover:text-[var(--foreground)] transition-colors" />
               </div>
-              <p className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{stat.value}</p>
-              <p className="text-sm font-medium text-slate-500 mt-1">{stat.label}</p>
+              <div>
+                <p className="text-[var(--muted)] text-sm font-medium mb-1">{stat.label}</p>
+                <p className="text-3xl font-bold tracking-tighter text-[var(--foreground)]">{stat.value}</p>
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Charts Row 1 */}
+      {/* Main Charts Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Bar Chart (takes 2/3) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
+        
+        {/* Revenue Trends */}
+        <div className="lg:col-span-2 bg-[var(--card-bg)] rounded-[24px] border border-[var(--border-color)] shadow-sm p-6 sm:p-8">
+          <div className="flex justify-between items-center mb-8">
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary-500" /> Monthly Revenue
+              <h3 className="font-bold text-[var(--foreground)] flex items-center gap-2 text-lg">
+                <BarChart2 className="w-5 h-5 text-[var(--muted)]" /> Revenue Trends
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">Last 6 months · Paid invoices only</p>
+              <p className="text-xs text-[var(--muted)] mt-1 font-medium uppercase tracking-wider">Last 6 months</p>
             </div>
             <div className="text-right">
-              <p className="text-lg font-bold text-slate-900 dark:text-white">₹{totalRevenue.toLocaleString("en-IN")}</p>
-              <p className="text-xs text-slate-500">Total collected</p>
+              <p className="text-2xl font-bold tracking-tighter text-[var(--foreground)]">₹{totalRevenue.toLocaleString("en-IN")}</p>
+              <p className="text-xs text-[var(--muted)] font-medium">Total collected</p>
             </div>
           </div>
-          <RevenueBarChart data={revenueData} />
-        </div>
-
-        {/* Attendance Pie */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6">
-          <div className="mb-4">
-            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <CalendarCheck className="w-4 h-4 text-green-500" /> Attendance
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Overall · All batches</p>
-          </div>
-          <AttendancePieChart data={attendanceData} percentage={attendancePct} />
-        </div>
-      </div>
-
-      {/* Student Growth Chart */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-500" /> New Student Enrolments
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">New students joining per month</p>
+          <div className="h-[300px]">
+             <RevenueBarChart data={revenueData} />
           </div>
         </div>
-        <StudentGrowthChart data={growthData} />
+
+        {/* Attendance Breakdown */}
+        <div className="bg-[var(--card-bg)] rounded-[24px] border border-[var(--border-color)] shadow-sm p-6 sm:p-8 flex flex-col">
+          <div className="mb-8">
+            <h3 className="font-bold text-[var(--foreground)] flex items-center gap-2 text-lg">
+              <Users className="w-5 h-5 text-[var(--muted)]" /> Attendance
+            </h3>
+            <p className="text-xs text-[var(--muted)] mt-1 font-medium uppercase tracking-wider">Overall Average</p>
+          </div>
+          <div className="flex-1 flex flex-col justify-center items-center">
+            <div className="h-[200px] w-full">
+              <AttendancePieChart data={attendanceData} percentage={attendancePct} />
+            </div>
+            <div className="mt-6 text-center">
+              <div className="text-4xl font-bold tracking-tighter text-[var(--foreground)]">{attendancePct}%</div>
+              <p className="text-sm text-[var(--muted)] font-medium">Average Present Rate</p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      {/* Invoice Status Breakdown */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-6">
-        <h3 className="font-bold text-slate-900 dark:text-white mb-5">Fee Collection Summary</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { label: "Paid Invoices",    count: invoices?.filter(i => i.status === "paid").length || 0,    amount: totalRevenue, color: "bg-green-500" },
-            { label: "Pending Invoices", count: invoices?.filter(i => i.status === "pending").length || 0, amount: pendingDues,  color: "bg-orange-400" },
-            { label: "Total Invoices",   count: invoices?.length || 0,                                      amount: totalRevenue + pendingDues, color: "bg-primary-500" },
-          ].map(item => (
-            <div key={item.label} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-              <div className={`w-2 h-12 rounded-full ${item.color}`} />
+      {/* Bottom Data Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Growth Chart */}
+        <div className="bg-[var(--card-bg)] rounded-[24px] border border-[var(--border-color)] shadow-sm p-6 sm:p-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h3 className="font-bold text-[var(--foreground)] flex items-center gap-2 text-lg">
+                <TrendingUp className="w-5 h-5 text-[var(--muted)]" /> Growth
+              </h3>
+              <p className="text-xs text-[var(--muted)] mt-1 font-medium uppercase tracking-wider">New students joining per month</p>
+            </div>
+          </div>
+          <div className="h-[250px]">
+            <StudentGrowthChart data={growthData} />
+          </div>
+        </div>
+
+        {/* Collection Summary */}
+        <div className="bg-[var(--foreground)] text-[var(--background)] rounded-[24px] shadow-sm p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+          
+          <div className="relative z-10 mb-8">
+            <h3 className="font-bold text-[var(--background)] flex items-center gap-2 text-lg">
+              <IndianRupee className="w-5 h-5 opacity-70" /> Fee Collection Summary
+            </h3>
+            <p className="text-xs text-[var(--background)]/50 mt-1 font-medium uppercase tracking-wider">Lifetime Overview</p>
+          </div>
+
+          <div className="space-y-6 relative z-10">
+            <div className="flex items-center justify-between border-b border-[var(--background)]/10 pb-4">
               <div>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{item.count}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{item.label}</p>
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-1">₹{item.amount.toLocaleString("en-IN")}</p>
+                <p className="text-[var(--background)]/70 text-sm font-medium mb-1">Total Invoices</p>
+                <p className="text-2xl font-bold">{invoices?.length || 0}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold">₹{(totalRevenue + pendingDues).toLocaleString("en-IN")}</p>
+                <p className="text-[var(--background)]/70 text-sm font-medium mt-1">Total Billed</p>
               </div>
             </div>
-          ))}
+            
+            <div className="flex items-center justify-between border-b border-[var(--background)]/10 pb-4">
+              <div>
+                <p className="text-green-400 text-sm font-medium mb-1">Paid ({invoices?.filter(i => i.status === "paid").length || 0})</p>
+                <p className="text-2xl font-bold text-green-400">₹{totalRevenue.toLocaleString("en-IN")}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-amber-400 text-sm font-medium mb-1">Pending ({invoices?.filter(i => i.status === "pending").length || 0})</p>
+                <p className="text-2xl font-bold text-amber-400">₹{pendingDues.toLocaleString("en-IN")}</p>
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
   );

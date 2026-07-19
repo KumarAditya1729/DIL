@@ -1,11 +1,12 @@
 "use client";
 
-import { Plus, Search, Filter, Edit, Trash2, GraduationCap } from "lucide-react";
+import { Plus, Search, MoreHorizontal, CheckCircle2, XCircle, GraduationCap, ArrowUpDown, ChevronDown, Filter, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { deleteStudent } from "@/app/actions/students";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Student = {
   id: string;
@@ -26,6 +27,7 @@ export default function StudentsPage() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
   const loadStudents = () => {
     const supabase = createClient();
@@ -46,12 +48,11 @@ export default function StudentsPage() {
   }, []);
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete the student "${name}"?`)) return;
+    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
     const res = await deleteStudent(id);
-    if (res.error) {
-      toast.error(res.error);
-    } else {
-      toast.success("Student deleted successfully");
+    if (res.error) toast.error(res.error);
+    else {
+      toast.success("Student deleted");
       loadStudents();
     }
   };
@@ -61,11 +62,7 @@ export default function StudentsPage() {
     if (query.trim()) {
       const q = query.toLowerCase();
       result = result.filter(
-        s =>
-          s.full_name?.toLowerCase().includes(q) ||
-          s.admission_number?.toLowerCase().includes(q) ||
-          s.mobile_number?.includes(q) ||
-          s.batch?.toLowerCase().includes(q)
+        s => s.full_name?.toLowerCase().includes(q) || s.admission_number?.toLowerCase().includes(q)
       );
     }
     if (statusFilter !== "all") {
@@ -74,165 +71,210 @@ export default function StudentsPage() {
     setFiltered(result);
   }, [query, statusFilter, students]);
 
+  const toggleRow = (id: string) => {
+    const newSet = new Set(selectedRows);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedRows(newSet);
+  };
+
+  const toggleAll = () => {
+    if (selectedRows.size === filtered.length && filtered.length > 0) {
+      setSelectedRows(newSet => new Set());
+    } else {
+      setSelectedRows(new Set(filtered.map(s => s.id)));
+    }
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+      
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Students Management</h1>
-          <p className="text-slate-500 text-sm mt-1">
-            {loading ? "Loading..." : `${students.length} student${students.length !== 1 ? "s" : ""} enrolled`}
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)]">Student Directory</h1>
+          <p className="text-[var(--muted)] text-sm mt-1">
+            {loading ? "Loading directory..." : `${students.length} total students enrolled`}
           </p>
         </div>
-        <Link
-          href="/dashboard/students/new"
-          className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium shadow-sm transition-all text-sm flex items-center justify-center gap-2 w-fit"
-        >
-          <Plus className="w-4 h-4" />
-          New Admission
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/dashboard/students/new"
+            className="px-5 py-2.5 bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 text-[var(--background)] rounded-full font-semibold shadow-sm transition-all text-sm flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> Add Student
+          </Link>
+        </div>
       </div>
 
-      {/* Segmented Quick Filter Status Tabs */}
-      <div className="flex flex-wrap gap-2 pt-2">
-        {[
-          { id: "all", label: "All Students", count: students.length },
-          { id: "active", label: "Active Students", count: students.filter(s => s.status === "active").length, color: "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" },
-          { id: "inactive", label: "Inactive Students", count: students.filter(s => s.status === "inactive").length, color: "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800" },
-          { id: "alumni", label: "Alumni Students", count: students.filter(s => s.status === "alumni").length, color: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800" }
-        ].map((tab) => {
-          const isActive = statusFilter === tab.id;
-          return (
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[var(--card-bg)] p-2 rounded-2xl border border-[var(--border-color)]">
+        
+        {/* Filters */}
+        <div className="flex bg-[var(--background)] p-1 rounded-xl w-full sm:w-auto overflow-x-auto no-scrollbar border border-[var(--border-color)]">
+          {[
+            { id: "all", label: "All" },
+            { id: "active", label: "Active" },
+            { id: "inactive", label: "Inactive" },
+            { id: "alumni", label: "Alumni" }
+          ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setStatusFilter(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                isActive
-                  ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-950 shadow-md scale-105"
-                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
+              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+                statusFilter === tab.id
+                  ? "bg-[var(--foreground)] text-[var(--background)] shadow-sm"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
               }`}
             >
-              <span>{tab.label}</span>
-              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
-                isActive 
-                  ? "bg-white/20 text-white dark:bg-slate-950/20 dark:text-slate-950" 
-                  : tab.color ? tab.color : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-              }`}>
-                {tab.count}
-              </span>
+              {tab.label}
             </button>
-          );
-        })}
-      </div>
-
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-        {/* Search Bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex gap-3 items-center bg-slate-50/50 dark:bg-slate-800/20">
-          <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Search by name, ID, mobile, or batch..."
-              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none text-sm dark:text-slate-200"
-            />
-          </div>
+          ))}
         </div>
 
+        {/* Search */}
+        <div className="relative w-full sm:max-w-xs flex-shrink-0">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search directory..."
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-[var(--border-color)] bg-[var(--background)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none text-sm font-medium text-[var(--foreground)] placeholder:text-[var(--muted)]"
+          />
+        </div>
+      </div>
+
+      {/* Bulk Actions Banner */}
+      <AnimatePresence>
+        {selectedRows.size > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-[var(--foreground)] text-[var(--background)] p-3 rounded-2xl flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4 px-2">
+              <span className="text-sm font-bold bg-[var(--background)] text-[var(--foreground)] px-2 py-0.5 rounded-md">{selectedRows.size}</span>
+              <span className="text-sm font-medium">students selected</span>
+            </div>
+            <div className="flex gap-2">
+              <button className="px-3 py-1.5 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors">Message</button>
+              <button className="px-3 py-1.5 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20 transition-colors">Export</button>
+              <button className="px-3 py-1.5 rounded-xl text-sm font-medium bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors">Delete</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modern Data Grid */}
+      <div className="bg-[var(--card-bg)] rounded-[24px] border border-[var(--border-color)] shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="text-center py-16 text-slate-400">
-              <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-              <p className="text-sm">Loading students...</p>
+            <div className="text-center py-20 text-[var(--muted)]">
+              <div className="w-8 h-8 border-2 border-[var(--foreground)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-sm font-medium">Loading directory...</p>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-16 text-slate-500 flex flex-col items-center">
-              <GraduationCap className="w-12 h-12 text-slate-300 mb-4" />
-              <p className="font-medium text-slate-700 dark:text-slate-300">
-                {query || statusFilter !== "all" ? "No students match your search." : "No students enrolled yet."}
-              </p>
-              {!query && statusFilter === "all" && (
-                <Link href="/dashboard/students/new" className="mt-3 text-primary-600 text-sm font-medium hover:underline">
-                  + Add your first student
-                </Link>
-              )}
+            <div className="text-center py-24 text-[var(--muted)] flex flex-col items-center">
+              <GraduationCap className="w-12 h-12 text-[var(--border-color)] mb-4" />
+              <p className="font-semibold text-[var(--foreground)] text-lg">No students found.</p>
+              <p className="text-sm mt-1">Adjust your filters or add a new student.</p>
             </div>
           ) : (
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+              <thead className="text-xs text-[var(--muted)] bg-[var(--background)] border-b border-[var(--border-color)]">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Admission No.</th>
-                  <th className="px-6 py-4 font-medium">Student</th>
-                  <th className="px-6 py-4 font-medium">Mobile</th>
-                  <th className="px-6 py-4 font-medium">Batch / Course</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                  <th className="px-6 py-4 w-10">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-[var(--border-color)] text-[var(--foreground)] focus:ring-[var(--foreground)] bg-[var(--card-bg)]"
+                      checked={selectedRows.size === filtered.length && filtered.length > 0}
+                      onChange={toggleAll}
+                    />
+                  </th>
+                  <th className="px-6 py-4 font-semibold tracking-wider flex items-center gap-1 cursor-pointer hover:text-[var(--foreground)]">STUDENT <ArrowUpDown className="w-3 h-3"/></th>
+                  <th className="px-6 py-4 font-semibold tracking-wider">ADMISSION</th>
+                  <th className="px-6 py-4 font-semibold tracking-wider">BATCH</th>
+                  <th className="px-6 py-4 font-semibold tracking-wider">STATUS</th>
+                  <th className="px-6 py-4 font-semibold tracking-wider text-right"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filtered.map((student) => (
-                  <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
-                    {/* Admission Number — prominent */}
-                    <td className="px-6 py-4">
-                      <span className="font-mono font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2.5 py-1 rounded-lg text-xs tracking-wider">
-                        {student.admission_number || "—"}
-                      </span>
-                    </td>
-                    {/* Student Name & Parent */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-accent-500 text-white flex items-center justify-center font-bold text-sm uppercase shrink-0">
-                          {student.full_name?.charAt(0) || "S"}
+              <tbody className="divide-y divide-[var(--border-color)]">
+                {filtered.map((student) => {
+                  const isSelected = selectedRows.has(student.id);
+                  return (
+                    <tr 
+                      key={student.id} 
+                      className={`hover:bg-[var(--background)] transition-colors group ${isSelected ? 'bg-[var(--background)]' : ''}`}
+                    >
+                      <td className="px-6 py-5">
+                        <input 
+                          type="checkbox" 
+                          className="rounded border-[var(--border-color)] text-[var(--foreground)] focus:ring-[var(--foreground)] bg-[var(--card-bg)]"
+                          checked={isSelected}
+                          onChange={() => toggleRow(student.id)}
+                        />
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-[var(--foreground)] flex items-center justify-center font-bold text-sm text-[var(--background)] shrink-0">
+                            {student.full_name?.charAt(0) || "S"}
+                          </div>
+                          <div>
+                            <Link href={`/dashboard/students/${student.admission_number}`} className="font-semibold text-[var(--foreground)] hover:underline">
+                              {student.full_name}
+                            </Link>
+                            <p className="text-xs text-[var(--muted)] font-medium mt-0.5">{student.parent_name ? `Parent: ${student.parent_name}` : student.mobile_number}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-slate-900 dark:text-slate-100">{student.full_name}</p>
-                          <p className="text-xs text-slate-400">{student.parent_name ? `Parent: ${student.parent_name}` : ""}</p>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className="font-mono font-medium text-[var(--muted)] text-xs bg-[var(--background)] px-2 py-1 rounded-md border border-[var(--border-color)]">
+                          {student.admission_number || "—"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5">
+                        <p className="text-[var(--foreground)] font-medium text-sm">{student.batch || "Unassigned"}</p>
+                        <p className="text-xs text-[var(--muted)] font-medium mt-0.5">{student.dance_style || ""}</p>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-2">
+                          {student.status === "active" && (
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Active
+                            </span>
+                          )}
+                          {student.status !== "active" && (
+                            <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-[var(--background)] text-[var(--muted)] border border-[var(--border-color)]">
+                              {student.status}
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">{student.mobile_number}</td>
-                    <td className="px-6 py-4">
-                      <p className="text-slate-800 dark:text-slate-300 font-medium">{student.batch || "Not assigned"}</p>
-                      <p className="text-xs text-slate-400">{student.dance_style || ""}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
-                        student.status === "active"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : student.status === "alumni"
-                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                      }`}>
-                        {student.status === "active" ? "Active" : student.status === "alumni" ? "Alumni" : "Inactive"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link href={"/dashboard/students/" + student.admission_number} title="Edit student" className="p-1.5 text-slate-400 hover:text-primary-600 rounded-md hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
-                          <Edit className="w-4 h-4" />
-                        </Link>
-                        <button onClick={() => handleDelete(student.id, student.full_name)} title="Remove student" className="p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            className="p-2 text-[var(--muted)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
+                            onClick={() => handleDelete(student.id, student.full_name)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <Link 
+                            href={`/dashboard/students/${student.admission_number}`}
+                            className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--background)] border border-transparent hover:border-[var(--border-color)] rounded-xl transition-colors"
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
         </div>
-
-        {filtered.length > 0 && (
-          <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
-            <span>Showing {filtered.length} of {students.length} students</span>
-            {query && (
-              <button onClick={() => setQuery("")} className="text-primary-600 hover:underline font-medium">
-                Clear search
-              </button>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

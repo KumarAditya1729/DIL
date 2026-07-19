@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { fetchChildData, fetchChildInvoices, createRazorpayOrder, verifyParentPayment } from "@/app/actions/parent";
-import { CreditCard, CheckCircle2, Clock, AlertCircle, IndianRupee, Loader2, ExternalLink } from "lucide-react";
+import { CreditCard, CheckCircle2, Clock, AlertCircle, IndianRupee, Loader2, ExternalLink, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 declare global {
   interface Window { Razorpay: any; }
@@ -73,7 +74,7 @@ export default function ParentFeesPage() {
           email: child?.email || "",
           contact: child?.mobile_number || "",
         },
-        theme: { color: "#7c3aed" },
+        theme: { color: "#111111" },
         modal: { ondismiss: () => setPayingId(null) },
       };
 
@@ -94,129 +95,165 @@ export default function ParentFeesPage() {
   const totalPending = invoices.filter(i => i.status === "pending").reduce((s, i) => s + parseFloat(i.amount || "0"), 0);
 
   if (isLoading) {
-    return <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" /></div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--muted)] mb-4" />
+        <p className="text-[var(--muted)] text-sm font-medium">Loading financial records...</p>
+      </div>
+    );
   }
 
   if (!child) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] animate-in fade-in duration-500">
-        <div className="text-center bg-white/5 border border-white/10 rounded-3xl p-8 max-w-sm shadow-2xl space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mx-auto">
-            <CreditCard className="w-8 h-8" />
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-center min-h-[60vh]"
+      >
+        <div className="text-center bg-[var(--card)] border border-[var(--border-color)] rounded-3xl p-10 max-w-sm shadow-sm space-y-6">
+          <div className="w-16 h-16 rounded-full bg-[var(--hover-bg)] text-[var(--foreground)] flex items-center justify-center mx-auto border border-[var(--border-color)]">
+            <CreditCard className="w-8 h-8 opacity-80" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-white">No Linked Student</h2>
-            <p className="text-slate-400 text-sm">
+            <h2 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">No Linked Student</h2>
+            <p className="text-[var(--muted)] text-sm">
               Please register your child first to view and pay outstanding fees.
             </p>
           </div>
-          <div className="pt-2">
+          <div className="pt-4">
             <Link
               href="/parent/dashboard/register"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-pink-600 hover:from-primary-500 hover:to-pink-500 text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-purple-500/25"
+              className="inline-flex items-center justify-center w-full py-3 bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 rounded-xl font-medium text-sm transition-all shadow-sm"
             >
               Register Child Now
             </Link>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-4xl mx-auto space-y-8 pb-10"
+    >
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <CreditCard className="w-6 h-6 text-primary-400" /> Fees & Payments
+        <h1 className="text-3xl font-semibold text-[var(--foreground)] flex items-center gap-3 tracking-tight">
+          <CreditCard className="w-8 h-8 text-[var(--muted)]" /> Fees & Payments
         </h1>
-        <p className="text-slate-500 text-sm mt-1">View invoices and pay fees securely online.</p>
+        <p className="text-[var(--muted)] text-sm mt-2 ml-11">View invoices and pay fees securely online.</p>
       </div>
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-green-500/5 border border-green-500/10 rounded-2xl p-5">
-          <CheckCircle2 className="w-5 h-5 text-green-400 mb-3" />
-          <p className="text-3xl font-bold text-green-400">₹{totalPaid.toLocaleString()}</p>
-          <p className="text-xs text-slate-500 mt-1">Total Paid</p>
+        <div className="bg-[var(--card)] border border-[var(--border-color)] rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 text-[var(--muted)] mb-3">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <span className="text-xs font-medium uppercase tracking-wider">Total Paid</span>
+          </div>
+          <p className="text-4xl font-semibold tracking-tight text-[var(--foreground)]">₹{totalPaid.toLocaleString()}</p>
         </div>
-        <div className="bg-orange-500/5 border border-orange-500/10 rounded-2xl p-5">
-          <Clock className="w-5 h-5 text-orange-400 mb-3" />
-          <p className="text-3xl font-bold text-orange-400">₹{totalPending.toLocaleString()}</p>
-          <p className="text-xs text-slate-500 mt-1">Pending</p>
+        <div className={`rounded-3xl p-6 shadow-sm border ${totalPending > 0 ? "bg-amber-500/5 border-amber-500/20" : "bg-[var(--card)] border-[var(--border-color)]"}`}>
+          <div className={`flex items-center gap-2 mb-3 ${totalPending > 0 ? "text-amber-600" : "text-[var(--muted)]"}`}>
+            <Clock className="w-4 h-4" />
+            <span className="text-xs font-medium uppercase tracking-wider">Pending</span>
+          </div>
+          <p className={`text-4xl font-semibold tracking-tight ${totalPending > 0 ? "text-amber-600" : "text-[var(--foreground)]"}`}>
+            ₹{totalPending.toLocaleString()}
+          </p>
         </div>
       </div>
 
       {/* Secure Badge */}
-      <div className="flex items-center gap-2 text-xs text-slate-600 bg-white/5 border border-white/5 rounded-xl px-4 py-2.5">
-        <ExternalLink className="w-3.5 h-3.5 text-green-500" />
-        <span>Payments are processed securely via <strong className="text-slate-400">Razorpay</strong>. Your card details are never stored.</span>
+      <div className="flex items-center gap-3 bg-[var(--hover-bg)] border border-[var(--border-color)] rounded-2xl px-5 py-3.5 shadow-sm">
+        <ShieldCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+        <p className="text-sm text-[var(--foreground)] font-medium">
+          Payments are processed securely via <strong className="font-semibold">Razorpay</strong>. Your card details are never stored.
+        </p>
       </div>
 
       {/* Invoice List */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-        <div className="p-4 border-b border-white/10">
-          <h2 className="font-bold text-white text-sm">All Invoices ({invoices.length})</h2>
+      <div className="bg-[var(--card)] border border-[var(--border-color)] rounded-3xl overflow-hidden shadow-sm">
+        <div className="px-8 py-6 border-b border-[var(--border-color)] flex items-center justify-between">
+          <h2 className="font-semibold text-[var(--foreground)] text-lg tracking-tight">All Invoices</h2>
+          <span className="text-xs font-medium text-[var(--muted)] bg-[var(--hover-bg)] px-3 py-1 rounded-full border border-[var(--border-color)]">{invoices.length}</span>
         </div>
 
         {invoices.length === 0 ? (
-          <div className="text-center py-12 text-slate-500">
-            <IndianRupee className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>No invoices found for this student.</p>
+          <div className="text-center py-16 text-[var(--muted)] space-y-3">
+            <IndianRupee className="w-12 h-12 mx-auto opacity-20" />
+            <p className="text-sm">No invoices found for this student.</p>
           </div>
         ) : (
-          <div className="divide-y divide-white/5">
-            {invoices.map((inv) => {
-              const isPending = inv.status === "pending";
-              return (
-                <div key={inv.id} className="flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors gap-4">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-200 truncate">
-                      {inv.description || `Invoice #${inv.id?.slice(0, 8)}`}
-                    </p>
-                    <div className="flex items-center gap-3 mt-1">
-                      <p className="text-xs text-slate-500">
-                        {inv.created_at ? new Date(inv.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "N/A"}
+          <div className="divide-y divide-[var(--border-color)]">
+            <AnimatePresence>
+              {invoices.map((inv) => {
+                const isPending = inv.status === "pending";
+                return (
+                  <motion.div 
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    key={inv.id} 
+                    className="flex flex-col sm:flex-row sm:items-center justify-between px-8 py-5 hover:bg-[var(--hover-bg)] transition-colors gap-4"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base font-medium text-[var(--foreground)] truncate">
+                        {inv.description || `Invoice #${inv.id?.slice(0, 8)}`}
                       </p>
-                      {inv.due_date && (
-                        <p className="text-xs text-slate-600">Due: {new Date(inv.due_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</p>
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <p className="text-sm text-[var(--muted)]">
+                          {inv.created_at ? new Date(inv.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "N/A"}
+                        </p>
+                        {inv.due_date && (
+                          <>
+                            <span className="text-[var(--muted)] opacity-50">·</span>
+                            <p className="text-sm text-[var(--muted)]">Due {new Date(inv.due_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-end gap-5 flex-shrink-0 mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-0 border-[var(--border-color)]">
+                      <p className="text-xl font-semibold text-[var(--foreground)] tracking-tight">
+                        ₹{parseFloat(inv.amount || "0").toLocaleString()}
+                      </p>
+
+                      {isPending ? (
+                        <button
+                          onClick={() => handlePayNow(inv)}
+                          disabled={payingId === inv.id}
+                          className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--foreground)] hover:opacity-90 text-[var(--background)] text-sm font-medium rounded-xl shadow-sm transition-all disabled:opacity-60 min-w-[120px]"
+                        >
+                          {payingId === inv.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                          Pay Now
+                        </button>
+                      ) : (
+                        <span className="flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 rounded-xl uppercase tracking-wider min-w-[120px]">
+                          <CheckCircle2 className="w-4 h-4" /> Paid
+                        </span>
                       )}
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <p className="text-base font-bold text-white">₹{parseFloat(inv.amount || "0").toLocaleString()}</p>
-
-                    {isPending ? (
-                      <button
-                        onClick={() => handlePayNow(inv)}
-                        disabled={payingId === inv.id}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-primary-600 to-pink-600 hover:from-primary-500 hover:to-pink-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-purple-900/30 transition-all disabled:opacity-60"
-                      >
-                        {payingId === inv.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
-                        Pay Now
-                      </button>
-                    ) : (
-                      <span className="flex items-center gap-1.5 text-xs font-semibold text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-2 rounded-xl">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Paid
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         )}
       </div>
 
       {/* Help Note */}
-      <div className="flex items-start gap-3 bg-white/5 border border-white/5 rounded-2xl p-4">
-        <AlertCircle className="w-4 h-4 text-primary-400 mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-slate-500 leading-relaxed">
+      <div className="flex items-start gap-3 bg-[var(--card)] border border-[var(--border-color)] rounded-2xl p-5 shadow-sm">
+        <AlertCircle className="w-5 h-5 text-[var(--muted)] mt-0.5 flex-shrink-0" />
+        <p className="text-sm text-[var(--muted)] leading-relaxed">
           Having trouble with payment? Contact us at{" "}
-          <a href="mailto:admin@danceislife.academy" className="text-primary-400 hover:underline">admin@danceislife.academy</a>{" "}
+          <a href="mailto:admin@danceislife.academy" className="text-[var(--foreground)] font-medium hover:underline">admin@danceislife.academy</a>{" "}
           or call your academy directly. We accept UPI, cards, net banking and wallets.
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }

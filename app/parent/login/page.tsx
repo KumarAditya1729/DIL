@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { parentLogin, parentRegister } from "@/app/actions/parent";
-import { Music2, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function ParentLoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -42,127 +44,157 @@ export default function ParentLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 flex items-center justify-center p-4">
-      {/* Background orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-600/10 rounded-full blur-3xl" />
+    <div className="min-h-screen flex bg-[var(--background)] font-sans">
+      
+      {/* Left Side - Image/Brand (Parent specific) */}
+      <div className="hidden lg:flex w-1/2 relative bg-black items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center opacity-50 mix-blend-luminosity"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+        
+        <div className="relative z-10 p-12 w-full h-full flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+              <span className="text-black font-bold text-sm tracking-tighter">DIL</span>
+            </div>
+            <span className="font-semibold text-lg text-white tracking-tight">Dance Is Life OS</span>
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="max-w-md"
+          >
+            <h2 className="text-4xl font-bold text-white leading-tight mb-4 tracking-tighter">Stay connected with your child&apos;s journey.</h2>
+            <p className="text-white/60 text-lg">Track attendance, review payments, and never miss an update.</p>
+          </motion.div>
+        </div>
       </div>
 
-      <div className="w-full max-w-md relative">
-        {/* Card */}
-        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-pink-500 shadow-lg shadow-purple-500/30 mb-4">
-              <Music2 className="w-8 h-8 text-white" />
+      {/* Right Side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="mb-10 lg:hidden flex items-center gap-3 justify-center">
+            <div className="w-8 h-8 rounded-full bg-[var(--foreground)] flex items-center justify-center">
+              <span className="text-[var(--background)] font-bold text-sm tracking-tighter">DIL</span>
             </div>
-            <h1 className="text-2xl font-bold text-white">
-              {isSignUp ? "Create Parent Account" : "Parent Portal"}
+            <span className="font-semibold text-lg text-[var(--foreground)] tracking-tight">Dance Is Life OS</span>
+          </div>
+
+          <div className="mb-10">
+            <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight mb-2">
+              {isSignUp ? "Create Account" : "Parent Portal"}
             </h1>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-[var(--muted)]">
               {isSignUp 
-                ? "Sign up to track attendance, register kids, and pay fees" 
-                : "Track your child's journey at DIL Academy"
-              }
+                ? "Register to track attendance and pay fees." 
+                : "Sign in to track your child's journey."}
             </p>
           </div>
 
-          {/* Error */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm text-center">
-              {error}
-            </div>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Email Address</label>
+              <label className="text-sm font-semibold text-[var(--foreground)]">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted)]" />
                 <input
                   name="email"
                   type="email"
                   required
-                  placeholder="your@email.com"
-                  className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white placeholder:text-slate-600 outline-none transition-colors text-sm"
+                  placeholder="parent@email.com"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] focus:bg-[var(--background)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none transition-all text-[var(--foreground)]"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">Password</label>
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-semibold text-[var(--foreground)]">Password</label>
+                {!isSignUp && (
+                  <a href="#" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">Forgot password?</a>
+                )}
+              </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted)]" />
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white placeholder:text-slate-600 outline-none transition-colors text-sm"
+                  className="w-full pl-11 pr-11 py-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] focus:bg-[var(--background)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none transition-all text-[var(--foreground)]"
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
             {isSignUp && (
-              <div className="space-y-2 animate-in slide-in-from-top-1 duration-200">
-                <label className="text-sm font-medium text-slate-300">Confirm Password</label>
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="space-y-2"
+              >
+                <label className="text-sm font-semibold text-[var(--foreground)]">Confirm Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted)]" />
                   <input
                     name="confirmPassword"
                     type={showPassword ? "text" : "password"}
                     required
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 hover:border-white/20 focus:border-primary-500 rounded-xl text-white placeholder:text-slate-600 outline-none transition-colors text-sm"
+                    className="w-full pl-11 pr-11 py-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--card-bg)] focus:bg-[var(--background)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none transition-all text-[var(--foreground)]"
                   />
                 </div>
-              </div>
+              </motion.div>
+            )}
+
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl"
+              >
+                <p className="text-sm text-red-600 dark:text-red-400 font-medium text-center">{error}</p>
+              </motion.div>
             )}
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-gradient-to-r from-primary-600 to-pink-600 hover:from-primary-500 hover:to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/25 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 mt-2"
+              className="w-full py-4 px-4 bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 text-[var(--background)] rounded-xl font-semibold transition-all flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed group"
             >
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              {isLoading 
-                ? (isSignUp ? "Creating account..." : "Signing in...") 
-                : (isSignUp ? "Create Account & Sign In" : "Sign In →")
-              }
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+              {!isLoading && (
+                <span className="flex items-center gap-2">
+                  {isSignUp ? "Create Account" : "Sign In"} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
+              )}
             </button>
           </form>
 
-          {/* Registration Option Link */}
-          <p className="text-center text-slate-400 text-xs mt-6">
-            {isSignUp ? "Already have a parent account? " : "New to DIL Academy? "}
+          <div className="mt-8 pt-8 border-t border-[var(--border-color)] flex flex-col items-center gap-4">
             <button
               type="button"
               onClick={() => {
                 setIsSignUp(!isSignUp);
                 setError("");
               }}
-              className="text-primary-400 hover:text-primary-300 font-semibold transition-colors underline"
+              className="text-sm text-[var(--foreground)] font-semibold hover:underline transition-all"
             >
-              {isSignUp ? "Sign In →" : "Create Parent Account →"}
+              {isSignUp ? "Already have an account? Sign In" : "New to DIL Academy? Create Account"}
             </button>
-          </p>
-
-          <p className="text-center text-slate-600 text-xs mt-4">
-            Academy staff?{" "}
-            <a href="/login" className="text-primary-400 hover:text-primary-300 transition-colors">
-              Admin Login →
-            </a>
-          </p>
-        </div>
-
-        <p className="text-center text-slate-700 text-xs mt-6">
-          © 2024 Dance Is Life Art & Study Center. All rights reserved.
-        </p>
+            
+            <Link href="/login" className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
+              Academy Staff Login →
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

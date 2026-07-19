@@ -3,112 +3,169 @@
 import { useState } from "react";
 import { ArrowRight, Building2, Palette, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function OnboardingFlow() {
   const [step, setStep] = useState(1);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-800">
-        <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+    <div className="min-h-screen bg-[var(--background)] flex flex-col justify-center items-center p-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-2xl bg-[var(--card)] rounded-3xl shadow-lg overflow-hidden border border-[var(--border-color)]"
+      >
+        <div className="p-8 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--card)] relative z-10">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Academy Onboarding</h1>
-            <p className="text-sm text-slate-500 mt-1">Set up your workspace in 3 easy steps.</p>
+            <h1 className="text-2xl font-semibold text-[var(--foreground)] tracking-tight">Academy Onboarding</h1>
+            <p className="text-sm text-[var(--muted)] mt-1 font-medium">Set up your workspace in 3 easy steps.</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             {[1, 2, 3].map((s) => (
-              <div key={s} className={`w-3 h-3 rounded-full ${s === step ? 'bg-primary-600' : s < step ? 'bg-green-500' : 'bg-slate-200 dark:bg-slate-800'}`} />
+              <div 
+                key={s} 
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  s === step 
+                    ? 'bg-[var(--foreground)] scale-110' 
+                    : s < step 
+                      ? 'bg-emerald-500' 
+                      : 'bg-[var(--hover-bg)] border border-[var(--border-color)]'
+                }`} 
+              />
             ))}
           </div>
         </div>
 
-        <div className="p-8">
-          {step === 1 && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/30 text-primary-600 rounded-xl flex items-center justify-center">
-                  <Building2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Academy Details</h2>
-                  <p className="text-sm text-slate-500">What is the name of your dance school?</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Academy Name</label>
-                  <input type="text" placeholder="e.g. Urban Groove Studios" className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 focus:border-primary-500 outline-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Workspace URL</label>
-                  <div className="flex">
-                    <input type="text" placeholder="urbangroove" className="w-full px-4 py-3 rounded-l-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 focus:border-primary-500 outline-none text-right" />
-                    <span className="px-4 py-3 rounded-r-xl border border-l-0 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500">.danceapp.io</span>
+        <div className="p-8 md:p-10 min-h-[400px] flex flex-col">
+          <AnimatePresence mode="wait">
+            {step === 1 && (
+              <motion.div 
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8 flex-1 flex flex-col"
+              >
+                <div className="flex items-center gap-5 mb-2">
+                  <div className="w-14 h-14 bg-[var(--hover-bg)] text-[var(--foreground)] rounded-2xl flex items-center justify-center border border-[var(--border-color)] shadow-sm">
+                    <Building2 className="w-6 h-6 opacity-80" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">Academy Details</h2>
+                    <p className="text-sm text-[var(--muted)] mt-1">What is the name of your dance school?</p>
                   </div>
                 </div>
-              </div>
-              <div className="pt-6 flex justify-end">
-                <button onClick={() => setStep(2)} className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-sm transition-all text-sm flex items-center gap-2">
-                  Continue <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
+                <div className="space-y-6 flex-1">
+                  <div className="space-y-2.5">
+                    <label className="text-sm font-medium text-[var(--foreground)]">Academy Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Urban Groove Studios" 
+                      className="w-full px-5 py-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--hover-bg)]/50 focus:bg-[var(--card)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none text-[var(--foreground)] transition-all placeholder:text-[var(--muted)] text-base" 
+                    />
+                  </div>
+                  <div className="space-y-2.5">
+                    <label className="text-sm font-medium text-[var(--foreground)]">Workspace URL</label>
+                    <div className="flex rounded-xl overflow-hidden shadow-sm focus-within:ring-1 focus-within:ring-[var(--foreground)] focus-within:border-[var(--foreground)] border border-[var(--border-color)] transition-all">
+                      <input 
+                        type="text" 
+                        placeholder="urbangroove" 
+                        className="w-full px-5 py-3.5 bg-[var(--hover-bg)]/50 focus:bg-[var(--card)] outline-none text-right text-[var(--foreground)] placeholder:text-[var(--muted)] text-base border-r border-[var(--border-color)]" 
+                      />
+                      <span className="px-5 py-3.5 bg-[var(--hover-bg)] text-[var(--muted)] font-medium text-base whitespace-nowrap">.danceapp.io</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="pt-6 flex justify-end">
+                  <button onClick={() => setStep(2)} className="px-8 py-3.5 bg-[var(--foreground)] hover:opacity-90 text-[var(--background)] rounded-xl font-medium shadow-sm transition-all text-sm flex items-center gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
 
-          {step === 2 && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/30 text-primary-600 rounded-xl flex items-center justify-center">
-                  <Palette className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Brand & Theme</h2>
-                  <p className="text-sm text-slate-500">Customize the look and feel of your portal.</p>
-                </div>
-              </div>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Primary Theme Color</label>
-                  <div className="flex gap-4">
-                    {['#db2777', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'].map(color => (
-                      <button key={color} className="w-10 h-10 rounded-full border-2 border-transparent hover:border-slate-300 focus:border-slate-900 dark:focus:border-white transition-all focus:ring-4 focus:ring-slate-100 dark:focus:ring-slate-800" style={{ backgroundColor: color }}></button>
-                    ))}
+            {step === 2 && (
+              <motion.div 
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8 flex-1 flex flex-col"
+              >
+                <div className="flex items-center gap-5 mb-2">
+                  <div className="w-14 h-14 bg-[var(--hover-bg)] text-[var(--foreground)] rounded-2xl flex items-center justify-center border border-[var(--border-color)] shadow-sm">
+                    <Palette className="w-6 h-6 opacity-80" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-[var(--foreground)] tracking-tight">Brand & Theme</h2>
+                    <p className="text-sm text-[var(--muted)] mt-1">Customize the look and feel of your portal.</p>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Upload Logo</label>
-                  <div className="w-full h-32 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <span className="text-sm font-medium">Click to upload image</span>
-                    <span className="text-xs mt-1">PNG, JPG up to 2MB</span>
+                <div className="space-y-8 flex-1">
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-[var(--foreground)]">Primary Theme Color</label>
+                    <div className="flex gap-4">
+                      {['#111111', '#10b981', '#f59e0b', '#3b82f6', '#db2777'].map(color => (
+                        <button 
+                          key={color} 
+                          className="w-12 h-12 rounded-full border border-[var(--border-color)] hover:scale-110 focus:ring-2 focus:ring-offset-2 focus:ring-[var(--foreground)] transition-all shadow-sm" 
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-[var(--foreground)]">Upload Logo</label>
+                    <div className="w-full h-36 border-2 border-dashed border-[var(--border-color)] rounded-2xl flex flex-col items-center justify-center text-[var(--muted)] cursor-pointer hover:bg-[var(--hover-bg)] transition-colors">
+                      <div className="w-10 h-10 rounded-full bg-[var(--hover-bg)] mb-3 flex items-center justify-center border border-[var(--border-color)]">
+                        <ArrowRight className="w-4 h-4 -rotate-45" />
+                      </div>
+                      <span className="text-sm font-medium text-[var(--foreground)]">Click to upload image</span>
+                      <span className="text-xs mt-1">PNG, JPG up to 2MB</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="pt-6 flex justify-between">
-                <button onClick={() => setStep(1)} className="px-6 py-3 text-slate-500 font-medium hover:text-slate-700 text-sm">Back</button>
-                <button onClick={() => setStep(3)} className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-sm transition-all text-sm flex items-center gap-2">
-                  Continue <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
+                <div className="pt-6 flex justify-between items-center border-t border-[var(--border-color)]">
+                  <button onClick={() => setStep(1)} className="px-6 py-3.5 text-[var(--muted)] font-medium hover:text-[var(--foreground)] transition-colors text-sm">
+                    Back
+                  </button>
+                  <button onClick={() => setStep(3)} className="px-8 py-3.5 bg-[var(--foreground)] hover:opacity-90 text-[var(--background)] rounded-xl font-medium shadow-sm transition-all text-sm flex items-center gap-2">
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
 
-          {step === 3 && (
-            <div className="space-y-6 text-center animate-in slide-in-from-right-4 duration-300 py-8">
-              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 className="w-10 h-10" />
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Workspace Ready!</h2>
-              <p className="text-slate-500 max-w-sm mx-auto">Your SaaS tenant has been provisioned. You can now start adding students and batches.</p>
-              
-              <div className="pt-8">
-                <Link href="/dashboard" className="inline-flex px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-md transition-all text-sm items-center gap-2 transform hover:-translate-y-0.5">
-                  Go to Dashboard <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          )}
+            {step === 3 && (
+              <motion.div 
+                key="step3"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className="space-y-8 text-center flex-1 flex flex-col items-center justify-center py-6"
+              >
+                <div className="w-24 h-24 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm">
+                  <CheckCircle2 className="w-12 h-12" />
+                </div>
+                <div className="space-y-3">
+                  <h2 className="text-3xl font-semibold text-[var(--foreground)] tracking-tight">Workspace Ready!</h2>
+                  <p className="text-[var(--muted)] max-w-sm mx-auto text-sm leading-relaxed">
+                    Your premium OS tenant has been provisioned. You can now start adding students and batches.
+                  </p>
+                </div>
+                
+                <div className="pt-8 w-full max-w-[280px]">
+                  <Link href="/dashboard" className="flex items-center justify-center w-full px-8 py-4 bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 rounded-2xl font-medium shadow-md transition-all text-sm gap-3">
+                    Go to Dashboard <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

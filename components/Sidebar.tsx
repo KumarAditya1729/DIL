@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { 
   LayoutDashboard, 
   Users, 
@@ -20,7 +21,6 @@ import {
 } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 import { getUserRole } from "@/app/actions/auth";
-import { useEffect, useState as useReactState } from "react";
 
 export function Sidebar({ 
   isOpen, 
@@ -30,12 +30,10 @@ export function Sidebar({
   setIsOpen: (v: boolean) => void;
 }) {
   const pathname = usePathname();
-
-  const [userRole, setUserRole] = useReactState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    getUserRole().then(role => setUserRole(role || "admin")); // Default to admin for local testing if unauthenticated
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    getUserRole().then(role => setUserRole(role || "admin")); 
   }, []);
 
   const navItems = [
@@ -55,63 +53,81 @@ export function Sidebar({
   return (
     <>
       {/* Mobile Backdrop */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-md z-40 lg:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Sidebar Content */}
       <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 
-        z-50 transition-all duration-300 flex flex-col shadow-2xl lg:shadow-none
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        fixed top-4 left-4 h-[calc(100vh-2rem)] w-64 bg-[var(--card)] border border-[var(--border-color)]
+        z-50 flex flex-col rounded-3xl shadow-sm transition-transform duration-300
+        ${isOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}
       `}>
-        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40">
-          <div className="flex items-center gap-2 font-bold italic text-xl text-primary-600 dark:text-primary-500">
-            <Image src="/logo.png" alt="DIL Logo" width={32} height={32} className="object-contain drop-shadow-sm" />
-            <span>DIL Academy</span>
-          </div>
-          <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-500 hover:text-slate-700 transition-colors">
+        <div className="h-20 flex items-center justify-between px-6 border-b border-[var(--border-color)]/50">
+          <Link href="/dashboard" className="flex items-center gap-2 outline-none group" onClick={() => setIsOpen(false)}>
+            <div className="relative h-8 w-8 group-hover:scale-105 transition-transform">
+              <Image src="/logo.png" alt="Dance Is Life" fill className="object-contain" sizes="32px" />
+            </div>
+            <span className="font-semibold text-[var(--foreground)] tracking-tight">DIL Academy</span>
+          </Link>
+          <button onClick={() => setIsOpen(false)} className="lg:hidden text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4 no-scrollbar">
-          <div className="space-y-1">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`
-                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-primary-50 to-transparent border-l-4 border-primary-600 text-primary-700 font-semibold dark:from-primary-900/40 dark:text-primary-300' 
-                      : 'text-slate-600 hover:bg-slate-50/80 hover:translate-x-1 dark:text-slate-400 dark:hover:bg-slate-800/50 border-l-4 border-transparent'}
-                  `}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'text-primary-600 scale-110' : 'text-slate-400 group-hover:text-slate-600'}`} />
+        <div className="flex-1 overflow-y-auto py-5 px-3 no-scrollbar space-y-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="block relative outline-none"
+                onClick={() => setIsOpen(false)}
+              >
+                {isActive && (
+                  <motion.div 
+                    layoutId="sidebar-active"
+                    className="absolute inset-0 bg-[var(--hover-bg)] rounded-xl border border-[var(--border-color)]"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <div className={`
+                  relative z-10 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
+                  ${isActive ? 'text-[var(--foreground)]' : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--hover-bg)]/50'}
+                `}>
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[var(--foreground)]' : 'text-[var(--muted)]'}`} />
                   {item.name}
-                </Link>
-              );
-            })}
-          </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
-        <div className="p-4 border-t border-slate-100/50 dark:border-slate-800/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md">
-          <div className="flex items-center gap-3 px-2 mb-4 hover-lift">
-          <Image src="/logo.png" alt="Dance Is Life" width={40} height={40} className="object-contain drop-shadow-md" />
-          <div className="flex flex-col">
-            <span className="font-bold text-slate-900 dark:text-white leading-tight">Dance Is Life</span>
-            <span className="text-[10px] text-slate-500 font-medium tracking-wide uppercase">Art & Study Center</span>
+        <div className="p-4 mt-auto border-t border-[var(--border-color)]/50">
+          <div className="bg-[var(--hover-bg)] border border-[var(--border-color)] rounded-2xl p-3 shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-xl bg-[var(--card)] border border-[var(--border-color)] flex items-center justify-center shadow-sm">
+                <Users className="w-4 h-4 text-[var(--foreground)]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-medium text-xs text-[var(--foreground)] tracking-tight truncate w-32">Dance Is Life</span>
+                <span className="text-[10px] text-[var(--muted)] font-medium tracking-wide uppercase">Academy Plan</span>
+              </div>
+            </div>
+            <LogoutButton />
           </div>
-        </div>
-          <LogoutButton />
         </div>
       </aside>
     </>

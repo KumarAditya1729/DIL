@@ -5,12 +5,14 @@ import { generateReceiptPDF } from "@/lib/pdfGenerator";
 import { createInvoice, markInvoicePaid } from "@/app/actions/fees";
 import {
   Receipt, Printer, Send, Loader2, Plus, X, Save,
-  IndianRupee, Clock, CheckCircle2, AlertTriangle, TrendingUp,
+  Clock, CheckCircle2, AlertTriangle, TrendingUp, Download, ArrowUpRight
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { getUserRole } from "@/app/actions/auth";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 const MONTHS = [
   "January","February","March","April","May","June",
@@ -82,10 +84,10 @@ export default function FeesPage() {
 
   if (!hasAccess) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500">
-        <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Access Denied</h2>
-        <p className="mt-2 text-sm">You do not have permission to view financial records.</p>
+      <div className="h-[60vh] flex flex-col items-center justify-center text-[var(--muted)] gap-4">
+        <AlertTriangle className="w-12 h-12 opacity-50" />
+        <h2 className="text-xl font-medium text-[var(--foreground)]">Access Denied</h2>
+        <p className="text-sm">You do not have permission to view financial records.</p>
       </div>
     );
   }
@@ -107,7 +109,7 @@ export default function FeesPage() {
   };
 
   const handleWhatsApp = (record: any) => {
-    const msg = `Hello from Dance Is Life Art & Study Center!\n\nFee receipt for *${record.student}*:\n• Receipt: ${record.id}\n• Month: ${record.month}\n• Amount: ₹${record.amount}\n• Status: ${record.status}\n\nThank you! 🎶`;
+    const msg = `Hello from DIL Academy!\n\nFee receipt for *${record.student}*:\n• Receipt: ${record.id}\n• Month: ${record.month}\n• Amount: ₹${record.amount}\n• Status: ${record.status.toUpperCase()}\n\nThank you!`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -148,277 +150,262 @@ export default function FeesPage() {
     ? feeRecords
     : feeRecords.filter((r: any) => r.status === filterStatus);
 
-  const statusStyle: Record<string, string> = {
-    paid:    "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    pending: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-    overdue: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  };
-
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+      
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Fee Management</h1>
-          <p className="text-slate-500 text-sm mt-1">Track payments, issue receipts, and manage dues.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)]">Billing & Invoices</h1>
+          <p className="text-[var(--muted)] text-sm mt-1">Manage dues, collect payments, and track revenue.</p>
         </div>
-        <button
-          onClick={() => setIsCreateOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold shadow-sm transition-all text-sm self-start"
-        >
-          <Plus className="w-4 h-4" /> Create Invoice
-        </button>
+        <div className="flex items-center gap-2">
+          <button className="px-4 py-2 border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--foreground)] rounded-full font-medium transition-all text-sm flex items-center gap-2 shadow-sm hover:bg-[var(--background)]">
+            <Download className="w-4 h-4" /> Export
+          </button>
+          <button
+            onClick={() => setIsCreateOpen(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--foreground)] hover:bg-[var(--foreground)]/90 text-[var(--background)] rounded-full font-semibold shadow-sm transition-all text-sm"
+          >
+            <Plus className="w-4 h-4" /> New Invoice
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Revenue",  value: `₹${totalRevenue.toLocaleString("en-IN")}`,  icon: TrendingUp,     color: "text-primary-600 bg-primary-50 dark:bg-primary-900/20" },
-          { label: "Collected",      value: `₹${totalPaid.toLocaleString("en-IN")}`,      icon: CheckCircle2,   color: "text-green-600 bg-green-50 dark:bg-green-900/20" },
-          { label: "Pending",        value: `₹${totalPending.toLocaleString("en-IN")}`,   icon: Clock,          color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20" },
-          { label: "Overdue",        value: `₹${totalOverdue.toLocaleString("en-IN")}`,   icon: AlertTriangle,  color: "text-red-600 bg-red-50 dark:bg-red-900/20" },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-              <Icon className="w-5 h-5" />
+          { label: "Total Revenue", value: `₹${totalRevenue.toLocaleString("en-IN")}`, icon: TrendingUp, color: "text-[var(--foreground)]", bg: "bg-[var(--foreground)]/5" },
+          { label: "Collected", value: `₹${totalPaid.toLocaleString("en-IN")}`, icon: CheckCircle2, color: "text-green-600 dark:text-green-400", bg: "bg-green-500/10" },
+          { label: "Pending", value: `₹${totalPending.toLocaleString("en-IN")}`, icon: Clock, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10" },
+          { label: "Overdue", value: `₹${totalOverdue.toLocaleString("en-IN")}`, icon: AlertTriangle, color: "text-red-600 dark:text-red-400", bg: "bg-red-500/10" },
+        ].map(({ label, value, icon: Icon, color, bg }, i) => (
+          <div key={label} className="bg-[var(--card-bg)] rounded-[24px] border border-[var(--border-color)] shadow-sm p-6 relative overflow-hidden group">
+            <div className={`absolute top-0 right-0 w-32 h-32 ${bg} rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 transition-transform duration-500 group-hover:scale-150`}></div>
+            <div className="flex items-start justify-between relative z-10 mb-8">
+              <div className={`w-10 h-10 rounded-[14px] ${bg} flex items-center justify-center`}>
+                <Icon className={`w-5 h-5 ${color}`} />
+              </div>
             </div>
-            <div>
-              <p className="text-lg font-bold text-slate-900 dark:text-white">{value}</p>
-              <p className="text-xs text-slate-500">{label}</p>
+            <div className="relative z-10">
+              <h3 className="text-3xl font-semibold tracking-tighter text-[var(--foreground)]">{value}</h3>
+              <p className="text-sm font-medium text-[var(--muted)] mt-1">{label}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-        {/* Table Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <h2 className="font-bold text-slate-800 dark:text-slate-200">
-            Invoices
-            <span className="ml-2 text-sm font-normal text-slate-400">({filtered.length})</span>
-          </h2>
-          {/* Filter Tabs */}
-          <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-medium">
+      {/* Modern Data Grid */}
+      <div className="bg-[var(--card-bg)] rounded-[24px] border border-[var(--border-color)] shadow-sm overflow-hidden flex flex-col">
+        {/* Table Toolbar */}
+        <div className="p-4 border-b border-[var(--border-color)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[var(--background)]">
+          <div className="flex bg-[var(--card-bg)] p-1 rounded-xl w-full sm:w-auto overflow-x-auto no-scrollbar border border-[var(--border-color)] shadow-sm">
             {(["all", "pending", "overdue", "paid"] as const).map(s => (
               <button
                 key={s}
                 onClick={() => setFilterStatus(s)}
-                className={`px-3 py-1.5 rounded-lg capitalize transition-colors ${filterStatus === s ? "bg-white dark:bg-slate-700 shadow text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700"}`}
+                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap capitalize ${
+                  filterStatus === s
+                    ? "bg-[var(--foreground)] text-[var(--background)] shadow-sm"
+                    : "text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
+                }`}
               >
-                {s}
-                <span className="ml-1 opacity-60">
-                  ({s === "all" ? feeRecords.length : feeRecords.filter((r: any) => r.status === s).length})
-                </span>
+                {s} <span className="opacity-50 text-xs ml-1">({s === "all" ? feeRecords.length : feeRecords.filter((r: any) => r.status === s).length})</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="overflow-x-auto min-h-[300px]">
+        <div className="overflow-x-auto">
           {isLoading ? (
-            <div className="w-full flex flex-col items-center justify-center text-slate-400 py-16">
-              <Loader2 className="w-8 h-8 animate-spin mb-4 text-primary-500" />
-              <p>Loading invoices...</p>
+            <div className="h-64 w-full flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-[var(--muted)]" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-16 text-slate-400 space-y-3">
-              <IndianRupee className="w-12 h-12 mx-auto opacity-30" />
-              <p className="font-medium">No invoices found</p>
-              <p className="text-sm">
-                {filterStatus === "all"
-                  ? "Click \"Create Invoice\" above to issue the first fee."
-                  : `No ${filterStatus} invoices.`}
+            <div className="text-center py-24 text-[var(--muted)] flex flex-col items-center">
+              <Receipt className="w-12 h-12 text-[var(--border-color)] mb-4" />
+              <p className="font-semibold text-[var(--foreground)] text-lg">No invoices found</p>
+              <p className="text-sm mt-1">
+                {filterStatus === "all" ? "Create an invoice to get started." : `No ${filterStatus} invoices.`}
               </p>
             </div>
           ) : (
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50">
+              <thead className="text-xs text-[var(--muted)] bg-[var(--background)] border-b border-[var(--border-color)]">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Invoice</th>
-                  <th className="px-6 py-4 font-medium">Student</th>
-                  <th className="px-6 py-4 font-medium">Amount</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                  <th className="px-6 py-4 font-semibold tracking-wider">INVOICE</th>
+                  <th className="px-6 py-4 font-semibold tracking-wider">STUDENT</th>
+                  <th className="px-6 py-4 font-semibold tracking-wider">AMOUNT</th>
+                  <th className="px-6 py-4 font-semibold tracking-wider">STATUS</th>
+                  <th className="px-6 py-4 font-semibold tracking-wider text-right">ACTIONS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filtered.map((record: any) => (
-                  <tr key={record.id} className={`hover:bg-slate-50/50 dark:hover:bg-slate-800/20 ${record.status === "overdue" ? "bg-red-50/30 dark:bg-red-900/5" : ""}`}>
-                    <td className="px-6 py-4">
-                      <div className="font-mono font-medium text-slate-900 dark:text-slate-200 text-xs">{record.id}</div>
-                      <div className="text-xs text-slate-500 mt-0.5">{record.description}</div>
-                      <div className="text-xs text-slate-400">{record.date} · {record.method}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-slate-800 dark:text-slate-300">{record.student}</div>
-                      <div className="text-xs text-slate-500">{record.studentId} · {record.batch}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-900 dark:text-slate-200">₹{parseFloat(record.amount).toLocaleString("en-IN")}</div>
-                      {record.dueDate && record.status !== "paid" && (
-                        <div className={`text-xs mt-0.5 ${record.status === "overdue" ? "text-red-500 font-medium" : "text-slate-400"}`}>
-                          Due: {record.dueDate}
+              <tbody className="divide-y divide-[var(--border-color)]">
+                <AnimatePresence>
+                  {filtered.map((record: any) => (
+                    <motion.tr 
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      key={record.id} 
+                      className="hover:bg-[var(--background)] transition-colors group"
+                    >
+                      <td className="px-6 py-5">
+                        <div className="font-mono font-bold text-[var(--foreground)] text-xs bg-[var(--background)] px-2 py-1 rounded-md border border-[var(--border-color)] inline-block mb-1">
+                          {record.id}
                         </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 text-xs font-semibold rounded-full capitalize ${statusStyle[record.status] || statusStyle.pending}`}>
-                        {record.status === "overdue" ? "⚠ Overdue" : record.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {record.status !== "paid" && (
-                          <button
-                            onClick={() => handleMarkPaid(record)}
-                            disabled={markingPaid === record.id}
-                            className="px-3 py-1.5 text-xs font-semibold bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-lg transition-colors flex items-center gap-1 disabled:opacity-60"
-                            title="Mark as Paid"
-                          >
-                            {markingPaid === record.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                            Collect
-                          </button>
+                        <div className="text-xs font-medium text-[var(--foreground)]">{record.description}</div>
+                        <div className="text-[10px] uppercase tracking-wider text-[var(--muted)] mt-0.5">{record.date}</div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <Link href={`/dashboard/students/${record.studentId}`} className="font-bold text-[var(--foreground)] hover:underline flex items-center gap-1">
+                          {record.student} <ArrowUpRight className="w-3 h-3 text-[var(--muted)]" />
+                        </Link>
+                        <div className="text-xs text-[var(--muted)] mt-0.5 font-medium">{record.batch}</div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="font-bold text-lg text-[var(--foreground)] tracking-tight">₹{parseFloat(record.amount).toLocaleString("en-IN")}</div>
+                        {record.dueDate && record.status !== "paid" && (
+                          <div className={`text-[10px] uppercase tracking-wider mt-1 font-bold ${record.status === "overdue" ? "text-red-500" : "text-[var(--muted)]"}`}>
+                            Due {record.dueDate}
+                          </div>
                         )}
-                        <button
-                          onClick={() => handleDownload(record)}
-                          disabled={isGenerating}
-                          className="p-2 text-slate-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                          title="Download Receipt"
-                        >
-                          <Printer className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleWhatsApp(record)}
-                          className="p-2 text-slate-400 hover:text-green-600 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                          title="Send WhatsApp"
-                        >
-                          <Send className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-2">
+                          {record.status === 'paid' && (
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Paid
+                            </span>
+                          )}
+                          {record.status === 'pending' && (
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                              <Clock className="w-3.5 h-3.5" /> Pending
+                            </span>
+                          )}
+                          {record.status === 'overdue' && (
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                              <AlertTriangle className="w-3.5 h-3.5" /> Overdue
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {record.status !== "paid" && (
+                            <button
+                              onClick={() => handleMarkPaid(record)}
+                              disabled={markingPaid === record.id}
+                              className="px-3 py-1.5 text-xs font-bold bg-[var(--foreground)] text-[var(--background)] rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm hover:scale-105"
+                              title="Mark as Paid"
+                            >
+                              {markingPaid === record.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Collect"}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDownload(record)}
+                            disabled={isGenerating}
+                            className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] bg-[var(--background)] border border-transparent hover:border-[var(--border-color)] rounded-xl transition-all shadow-sm"
+                            title="Download Receipt"
+                          >
+                            <Printer className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleWhatsApp(record)}
+                            className="p-2 text-[var(--muted)] hover:text-[#25D366] bg-[var(--background)] border border-transparent hover:border-[#25D366]/30 rounded-xl transition-all shadow-sm"
+                            title="Send WhatsApp"
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
               </tbody>
             </table>
           )}
         </div>
       </div>
 
-      {/* ── Create Invoice Modal ─────────────────────────── */}
-      {isCreateOpen && (
-        <>
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40" onClick={() => setIsCreateOpen(false)} />
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200">
-              {/* Modal Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Receipt className="w-5 h-5 text-primary-600" /> Create Invoice
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Issue a new fee invoice to a student</p>
-                </div>
-                <button onClick={() => setIsCreateOpen(false)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                  <X className="w-5 h-5 text-slate-500" />
-                </button>
-              </div>
-
-              {/* Modal Form */}
-              <form onSubmit={handleCreateInvoice} className="p-6 space-y-4">
-                {/* Student selector */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Student <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="studentId"
-                    required
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white"
-                  >
-                    <option value="">— Select a student —</option>
-                    {students.map((s: any) => (
-                      <option key={s.id} value={s.admission_number}>
-                        {s.full_name} ({s.admission_number})
-                      </option>
-                    ))}
-                  </select>
+      {/* Create Invoice Modal */}
+      <AnimatePresence>
+        {isCreateOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-[var(--background)]/80 backdrop-blur-sm z-40" 
+              onClick={() => setIsCreateOpen(false)} 
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none"
+            >
+              <div className="bg-[var(--card-bg)] rounded-[32px] shadow-2xl border border-[var(--border-color)] w-full max-w-lg overflow-hidden flex flex-col pointer-events-auto">
+                <div className="flex items-center justify-between px-8 py-6 border-b border-[var(--border-color)]">
+                  <div>
+                    <h2 className="text-xl font-bold text-[var(--foreground)] tracking-tight">New Invoice</h2>
+                    <p className="text-sm text-[var(--muted)] mt-1">Issue a fee receipt</p>
+                  </div>
+                  <button onClick={() => setIsCreateOpen(false)} className="p-2 rounded-full hover:bg-[var(--background)] transition-all">
+                    <X className="w-5 h-5 text-[var(--muted)] hover:text-[var(--foreground)]" />
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Amount */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Amount (₹) <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-medium">₹</span>
-                      <input
-                        name="amount"
-                        type="number"
-                        required
-                        min="1"
-                        placeholder="2000"
-                        className="w-full pl-7 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white"
-                      />
+                <div className="p-8">
+                  <form id="invoice-form" onSubmit={handleCreateInvoice} className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Student *</label>
+                      <select name="studentId" required className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--background)] text-[var(--foreground)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none text-sm font-medium transition-all appearance-none">
+                        <option value="">— Select a student —</option>
+                        {students.map((s: any) => (
+                          <option key={s.id} value={s.admission_number}>{s.full_name} ({s.admission_number})</option>
+                        ))}
+                      </select>
                     </div>
-                  </div>
 
-                  {/* Month */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Fee Month <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="month"
-                      required
-                      defaultValue={MONTHS[new Date().getMonth()]}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white"
-                    >
-                      {MONTHS.map(m => <option key={m}>{m} {new Date().getFullYear()}</option>)}
-                    </select>
-                  </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Amount (₹) *</label>
+                        <input name="amount" type="number" required min="1" placeholder="2000" className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--background)] text-[var(--foreground)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none text-sm font-medium transition-all" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Fee Month *</label>
+                        <select name="month" required defaultValue={MONTHS[new Date().getMonth()]} className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--background)] text-[var(--foreground)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none text-sm font-medium transition-all appearance-none">
+                          {MONTHS.map(m => <option key={m}>{m} {new Date().getFullYear()}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Description</label>
+                      <input name="description" placeholder="e.g. Monthly tuition fee" className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--background)] text-[var(--foreground)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none text-sm font-medium transition-all" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Due Date <span className="opacity-50">(optional)</span></label>
+                      <input name="dueDate" type="date" className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--background)] text-[var(--foreground)] focus:border-[var(--foreground)] focus:ring-1 focus:ring-[var(--foreground)] outline-none text-sm font-medium transition-all" />
+                    </div>
+                  </form>
                 </div>
 
-                {/* Description */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
-                  <input
-                    name="description"
-                    placeholder="e.g. Monthly tuition fee – Dance batch"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white"
-                  />
-                </div>
-
-                {/* Due Date */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Due Date <span className="text-slate-400">(optional)</span></label>
-                  <input
-                    name="dueDate"
-                    type="date"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:border-primary-500 outline-none text-sm dark:text-white"
-                  />
-                </div>
-
-                {/* Actions */}
-                <div className="flex justify-end gap-3 pt-2">
-                  <button type="button" onClick={() => setIsCreateOpen(false)} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <div className="px-8 py-6 border-t border-[var(--border-color)] bg-[var(--background)] flex justify-end gap-3">
+                  <button type="button" onClick={() => setIsCreateOpen(false)} className="px-6 py-3 rounded-xl font-medium text-[var(--foreground)] hover:bg-[var(--card-bg)] transition-all text-sm">
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    disabled={isCreating}
-                    className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2 disabled:opacity-70 shadow-sm transition-colors"
-                  >
+                  <button type="submit" form="invoice-form" disabled={isCreating} className="px-6 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl text-sm font-semibold flex items-center gap-2 disabled:opacity-50 shadow-sm hover:scale-[1.02] transition-all">
                     {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     {isCreating ? "Creating..." : "Create Invoice"}
                   </button>
                 </div>
-              </form>
-            </div>
-          </div>
-        </>
-      )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

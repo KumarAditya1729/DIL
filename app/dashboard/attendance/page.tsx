@@ -1,11 +1,11 @@
 "use client";
 
-import { Calendar as CalendarIcon, CheckCircle2, XCircle, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, CheckCircle2, XCircle, ChevronLeft, ChevronRight, Loader2, BarChart2, Filter, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { fetchStudentsByBatch, saveDailyAttendance } from "@/app/actions/attendance";
 import { fetchBatches } from "@/app/actions/batches";
-
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 type StudentRow = { id: string, name: string, admissionNumber: string, batch: string, present: boolean | null };
 
@@ -22,9 +22,7 @@ export default function AttendancePage() {
       try {
         const data = await fetchBatches();
         setBatches(data);
-        if (data && data.length > 0) {
-          setActiveBatch(data[0].name);
-        }
+        if (data && data.length > 0) setActiveBatch(data[0].name);
       } catch (err) {
         console.error("Failed to load batches:", err);
       }
@@ -41,11 +39,7 @@ export default function AttendancePage() {
       setIsLoading(true);
       try {
         const data = await fetchStudentsByBatch(activeBatch);
-        if (data && data.length > 0) {
-          setStudents(data);
-        } else {
-          setStudents([]);
-        }
+        setStudents(data || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -59,8 +53,8 @@ export default function AttendancePage() {
     setStudents(prev => prev.map(s => s.id === id ? { ...s, present: status } : s));
   };
 
-  const markAllPresent = () => {
-    setStudents(prev => prev.map(s => ({ ...s, present: true })));
+  const markAll = (status: boolean) => {
+    setStudents(prev => prev.map(s => ({ ...s, present: status })));
   };
 
   const handleSave = async () => {
@@ -77,17 +71,12 @@ export default function AttendancePage() {
     }
 
     const res = await saveDailyAttendance(records, currentDate.toISOString(), activeBatch);
-    if (res.success) {
-      toast.success("Attendance saved successfully!");
-    } else {
-      toast.error(res.error || "Failed to save attendance");
-    }
+    if (res.success) toast.success("Attendance saved successfully!");
+    else toast.error(res.error || "Failed to save attendance");
     setIsSaving(false);
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  };
+  const formatDate = (date: Date) => date.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   const shiftDate = (days: number) => {
     const newDate = new Date(currentDate);
@@ -96,206 +85,172 @@ export default function AttendancePage() {
   };
 
   const percentPresent = students.length ? Math.round((students.filter(s => s.present).length / students.length) * 100) : 0;
-
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [pickerMonth, setPickerMonth] = useState(currentDate.getMonth());
-  const [pickerYear, setPickerYear] = useState(currentDate.getFullYear());
-  const [pickerDay, setPickerDay] = useState(currentDate.getDate());
-
-  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 2010 + 1 }, (_, i) => currentYear - i);
-
-  const applyDate = () => {
-    const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
-    const safeDay = Math.min(pickerDay, daysInMonth);
-    setCurrentDate(new Date(pickerYear, pickerMonth, safeDay));
-    setShowDatePicker(false);
-  };
-
+  const presentCount = students.filter(s => s.present).length;
+  const absentCount = students.filter(s => s.present === false).length;
+  const unmarkedCount = students.filter(s => s.present === null).length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-20">
+      
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Daily Attendance</h1>
-          <p className="text-slate-500 text-sm mt-1">Mark and track student attendance.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[var(--foreground)]">Attendance Register</h1>
+          <p className="text-[var(--muted)] text-sm mt-1">Manage daily attendance and view trends.</p>
         </div>
         <div className="flex gap-2">
-          {/* Date Picker */}
-          <div className="relative">
-            <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-              <button onClick={() => shiftDate(-1)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"><ChevronLeft className="w-4 h-4 text-slate-500" /></button>
-              <button 
-                onClick={() => { setPickerMonth(currentDate.getMonth()); setPickerYear(currentDate.getFullYear()); setPickerDay(currentDate.getDate()); setShowDatePicker(!showDatePicker); }}
-                className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-200 min-w-[140px] justify-center hover:text-primary-600 transition-colors text-sm"
-              >
-                <CalendarIcon className="w-4 h-4 text-primary-600" />
-                {formatDate(currentDate)}
-              </button>
-              <button onClick={() => shiftDate(1)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"><ChevronRight className="w-4 h-4 text-slate-500" /></button>
-            </div>
-
-            {/* Smart Date Picker Dropdown */}
-            {showDatePicker && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowDatePicker(false)} />
-                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 p-4 space-y-4">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jump to Date</p>
-                  
-                  {/* Year + Month row */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <label className="text-xs text-slate-500">Year</label>
-                      <select
-                        value={pickerYear}
-                        onChange={e => setPickerYear(Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
-                      >
-                        {years.map(y => <option key={y} value={y}>{y}</option>)}
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs text-slate-500">Month</label>
-                      <select
-                        value={pickerMonth}
-                        onChange={e => setPickerMonth(Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
-                      >
-                        {monthNames.map((m, i) => <option key={i} value={i}>{m}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Day input */}
-                  <div className="space-y-1">
-                    <label className="text-xs text-slate-500">Day (1–{new Date(pickerYear, pickerMonth + 1, 0).getDate()})</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={new Date(pickerYear, pickerMonth + 1, 0).getDate()}
-                      value={pickerDay}
-                      onChange={e => setPickerDay(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:border-primary-500"
-                    />
-                  </div>
-
-                  {/* Quick shortcuts */}
-                  <div className="flex gap-2 flex-wrap">
-                    <button onClick={() => { setCurrentDate(new Date()); setShowDatePicker(false); }} className="px-3 py-1 text-xs rounded-lg bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 hover:bg-primary-100 transition-colors font-medium">Today</button>
-                    <button onClick={() => { const d = new Date(); d.setDate(d.getDate()-7); setCurrentDate(d); setShowDatePicker(false); }} className="px-3 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">-7 days</button>
-                    <button onClick={() => { const d = new Date(); d.setMonth(d.getMonth()-1); setCurrentDate(d); setShowDatePicker(false); }} className="px-3 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">Last month</button>
-                  </div>
-
-                  <button onClick={applyDate} className="w-full py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-medium transition-colors">
-                    Go to Date
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          <button className="px-4 py-2 border border-[var(--border-color)] bg-[var(--card-bg)] text-[var(--foreground)] rounded-full font-medium transition-all text-sm flex items-center gap-2 shadow-sm hover:bg-[var(--background)]">
+            <BarChart2 className="w-4 h-4" /> View Heatmap
+          </button>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[400px]">
-        {/* Batch Selection Sidebar */}
-        <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-800 font-medium text-slate-700 dark:text-slate-200">
-            Select Batch
+      {/* Date & Batch Toolbar */}
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[var(--card-bg)] p-4 rounded-2xl border border-[var(--border-color)] shadow-sm">
+        
+        {/* Date Selector */}
+        <div className="flex items-center gap-1 bg-[var(--background)] p-1 rounded-xl border border-[var(--border-color)] shadow-sm w-full md:w-auto justify-between md:justify-start">
+          <button onClick={() => shiftDate(-1)} className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg transition-colors"><ChevronLeft className="w-4 h-4 text-[var(--foreground)]" /></button>
+          <div className="flex items-center gap-2 px-4 font-semibold text-sm text-[var(--foreground)]">
+            <CalendarIcon className="w-4 h-4 text-[var(--muted)]" />
+            {formatDate(currentDate)}
           </div>
-          <div className="p-2 space-y-1">
-            {batches.length === 0 ? (
-              <div className="p-4 text-xs text-slate-500 dark:text-slate-400 text-center">
-                ⚠️ No batches created yet. Create a batch first in Batches!
-              </div>
-            ) : (
-              batches.map((b) => (
-                <button 
-                  key={b.id} 
-                  onClick={() => setActiveBatch(b.name)}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-colors ${
-                    activeBatch === b.name 
-                    ? 'bg-white dark:bg-slate-800 shadow-sm text-primary-600 font-medium border border-slate-100 dark:border-slate-700' 
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50'
-                  }`}
-                >
-                  {b.name}
-                </button>
-              ))
-            )}
-          </div>
-        </div>        {/* Attendance Marking Area */}
-        <div className="flex-1 flex flex-col">
-          {!activeBatch ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-400">
-              <CalendarIcon className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-4" />
-              <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-1">No Active Batches</h3>
-              <p className="text-sm text-slate-500 text-center max-w-sm mb-4">You need to create a batch in the Batch Management section first to mark student attendance.</p>
-            </div>
-          ) : (
-            <>
-              <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center flex-wrap gap-4">
-                <div>
-                  <h2 className="font-bold text-lg text-slate-800 dark:text-slate-200">{activeBatch} Batch</h2>
-                  <p className="text-sm text-slate-500">{students.length} Students • {percentPresent}% Present</p>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={markAllPresent} disabled={isLoading || students.length === 0} className="px-3 py-1.5 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-sm font-medium rounded-lg border border-green-200 dark:border-green-800/50 hover:bg-green-100 transition-colors disabled:opacity-50">Mark All Present</button>
-                </div>
-              </div>
-
-              <div className="flex-1 p-0 overflow-y-auto">
-                {isLoading ? (
-                  <div className="w-full h-48 flex flex-col items-center justify-center text-slate-400">
-                    <Loader2 className="w-8 h-8 animate-spin mb-4 text-primary-500" />
-                    <p>Loading database records...</p>
-                  </div>
-                ) : students.length === 0 ? (
-                  <div className="w-full h-48 flex flex-col items-center justify-center text-slate-400">
-                    <p>No students enrolled in this batch yet.</p>
-                  </div>
-                ) : (
-                  <table className="w-full text-sm text-left">
-                    <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50">
-                      <tr>
-                        <th className="px-6 py-3 font-medium">Student</th>
-                        <th className="px-6 py-3 font-medium text-center">Status</th>
-                        <th className="px-6 py-3 font-medium text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {students.map((student) => (
-                        <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20">
-                          <td className="px-6 py-4">
-                            <div className="font-medium text-slate-900 dark:text-slate-200">{student.name}</div>
-                            <div className="text-xs text-slate-500">{student.admissionNumber || student.id.slice(0,8)}</div>
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            {student.present === true && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"><CheckCircle2 className="w-3.5 h-3.5" /> Present</span>}
-                            {student.present === false && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"><XCircle className="w-3.5 h-3.5" /> Absent</span>}
-                            {student.present === null && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">Not Marked</span>}
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden p-1 bg-slate-100 dark:bg-slate-800 gap-1">
-                              <button onClick={() => toggleAttendance(student.id, true)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${student.present === true ? 'bg-white dark:bg-slate-700 shadow-sm text-green-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>P</button>
-                              <button onClick={() => toggleAttendance(student.id, false)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${student.present === false ? 'bg-white dark:bg-slate-700 shadow-sm text-red-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>A</button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 text-right mt-auto">
-                <button onClick={handleSave} disabled={isSaving || students.length === 0} className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-sm transition-all text-sm flex items-center gap-2 ml-auto disabled:opacity-50">
-                  {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {isSaving ? "Saving..." : "Save Attendance"}
-                </button>
-              </div>
-            </>
-          )}
+          <button onClick={() => shiftDate(1)} className="p-2 hover:bg-[var(--foreground)]/5 rounded-lg transition-colors"><ChevronRight className="w-4 h-4 text-[var(--foreground)]" /></button>
         </div>
+
+        {/* Batch Selector */}
+        <div className="flex w-full md:w-auto overflow-x-auto no-scrollbar gap-2 bg-[var(--background)] p-1 rounded-xl border border-[var(--border-color)] shadow-sm">
+          {batches.map((b) => (
+            <button 
+              key={b.id} 
+              onClick={() => setActiveBatch(b.name)}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+                activeBatch === b.name 
+                ? "bg-[var(--foreground)] text-[var(--background)] shadow-sm" 
+                : "text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--foreground)]/5"
+              }`}
+            >
+              {b.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats Overview */}
+      {activeBatch && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-[var(--card-bg)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm flex flex-col justify-between">
+            <p className="text-[var(--muted)] text-sm font-medium mb-2">Total Students</p>
+            <h3 className="text-3xl font-bold tracking-tighter text-[var(--foreground)]">{students.length}</h3>
+          </div>
+          <div className="bg-green-50 dark:bg-green-950/20 p-5 rounded-2xl border border-green-100 dark:border-green-900/30 flex flex-col justify-between">
+            <p className="text-green-600/70 dark:text-green-400/70 text-sm font-medium mb-2">Present</p>
+            <h3 className="text-3xl font-bold tracking-tighter text-green-600 dark:text-green-400">{presentCount}</h3>
+          </div>
+          <div className="bg-red-50 dark:bg-red-950/20 p-5 rounded-2xl border border-red-100 dark:border-red-900/30 flex flex-col justify-between">
+            <p className="text-red-600/70 dark:text-red-400/70 text-sm font-medium mb-2">Absent</p>
+            <h3 className="text-3xl font-bold tracking-tighter text-red-600 dark:text-red-400">{absentCount}</h3>
+          </div>
+          <div className="bg-[var(--background)] p-5 rounded-2xl border border-[var(--border-color)] flex flex-col justify-between">
+            <p className="text-[var(--muted)] text-sm font-medium mb-2">Attendance Rate</p>
+            <h3 className="text-3xl font-bold tracking-tighter text-[var(--foreground)]">{percentPresent}%</h3>
+          </div>
+        </div>
+      )}
+
+      {/* Main Register Area */}
+      <div className="bg-[var(--card-bg)] rounded-[24px] border border-[var(--border-color)] shadow-sm overflow-hidden flex flex-col">
+        {!activeBatch ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-24 text-[var(--muted)]">
+            <CalendarIcon className="w-12 h-12 text-[var(--border-color)] mb-4" />
+            <h3 className="text-lg font-bold text-[var(--foreground)] mb-1">No Active Batches</h3>
+            <p className="text-sm">Create a batch first to mark student attendance.</p>
+          </div>
+        ) : (
+          <>
+            <div className="p-4 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--background)]">
+              <h2 className="font-bold text-sm tracking-widest uppercase text-[var(--muted)]">Student Register</h2>
+              <div className="flex gap-2">
+                <button onClick={() => markAll(true)} disabled={isLoading || students.length === 0} className="px-4 py-1.5 bg-[var(--background)] text-[var(--foreground)] text-sm font-semibold rounded-lg border border-[var(--border-color)] hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors shadow-sm disabled:opacity-50">
+                  Mark All Present
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 p-0 overflow-y-auto">
+              {isLoading ? (
+                <div className="w-full h-64 flex flex-col items-center justify-center text-[var(--muted)]">
+                  <Loader2 className="w-8 h-8 animate-spin mb-4 text-[var(--foreground)]" />
+                  <p className="font-medium text-sm">Loading register...</p>
+                </div>
+              ) : students.length === 0 ? (
+                <div className="w-full h-64 flex flex-col items-center justify-center text-[var(--muted)]">
+                  <p className="font-medium text-sm">No students enrolled in this batch.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 divide-y divide-x divide-[var(--border-color)] bg-[var(--card-bg)]">
+                  {students.map((student) => (
+                    <motion.div 
+                      key={student.id} 
+                      layout
+                      className={`p-4 flex items-center justify-between transition-colors ${
+                        student.present === true ? 'bg-green-50/50 dark:bg-green-950/10' :
+                        student.present === false ? 'bg-red-50/50 dark:bg-red-950/10' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[var(--background)] border border-[var(--border-color)] flex items-center justify-center font-bold text-sm text-[var(--foreground)]">
+                          {student.name.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm text-[var(--foreground)]">{student.name}</div>
+                          <div className="text-[10px] uppercase tracking-widest text-[var(--muted)]">{student.admissionNumber || student.id.slice(0,8)}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center p-1 bg-[var(--background)] rounded-xl border border-[var(--border-color)] shadow-sm">
+                        <button 
+                          onClick={() => toggleAttendance(student.id, true)} 
+                          className={`w-10 h-8 flex items-center justify-center rounded-lg transition-all ${
+                            student.present === true 
+                            ? 'bg-green-500 text-white shadow-md' 
+                            : 'text-[var(--muted)] hover:bg-[var(--card-bg)] hover:text-green-500'
+                          }`}
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => toggleAttendance(student.id, false)} 
+                          className={`w-10 h-8 flex items-center justify-center rounded-lg transition-all ${
+                            student.present === false 
+                            ? 'bg-red-500 text-white shadow-md' 
+                            : 'text-[var(--muted)] hover:bg-[var(--card-bg)] hover:text-red-500'
+                          }`}
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-[var(--border-color)] bg-[var(--background)] flex justify-between items-center">
+              <p className="text-sm text-[var(--muted)]">
+                <span className="font-bold text-[var(--foreground)]">{unmarkedCount}</span> students left to mark
+              </p>
+              <button 
+                onClick={handleSave} 
+                disabled={isSaving || students.length === 0} 
+                className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-full font-semibold shadow-sm transition-all text-sm flex items-center gap-2 hover:bg-[var(--foreground)]/90 disabled:opacity-50"
+              >
+                {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isSaving ? "Saving..." : "Save Register"}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
